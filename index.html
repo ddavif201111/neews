@@ -3,138 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Crypto Clicker Pro</title>
+    <title>Working Clicker</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root {
-            --bg: var(--tg-theme-bg-color, #ffffff);
-            --text: var(--tg-theme-text-color, #222);
-            --hint: var(--tg-theme-hint-color, #999);
-            --btn: var(--tg-theme-button-color, #2481cc);
-            --btn-text: var(--tg-theme-button-text-color, #fff);
-            --sec-bg: var(--tg-theme-secondary-bg-color, #f0f0f0);
-        }
-        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; align-items: center; height: 100vh; user-select: none; overflow: hidden; }
-        .stats { width: 100%; padding: 20px; background: var(--sec-bg); text-align: center; border-radius: 0 0 25px 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        #balance { font-size: 48px; font-weight: bold; color: var(--btn); margin: 5px 0; }
-        .click-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; }
-        .circle { 
-            width: 200px; height: 200px; 
-            background: radial-gradient(circle, #ffd700, #ff8c00); 
-            border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; 
-            font-size: 80px; 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2); 
-            cursor: pointer; 
+        body {
+            font-family: sans-serif;
+            background: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #000);
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            user-select: none;
             touch-action: manipulation;
-            transition: transform 0.05s; 
         }
-        .circle:active { transform: scale(0.92); }
-        .energy-box { width: 80%; margin-bottom: 20px; }
-        .energy-bar { width: 100%; height: 12px; background: #ddd; border-radius: 10px; overflow: hidden; }
-        #energy-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #f39c12, #e67e22); transition: width 0.3s; }
-        .shop { width: 90%; background: var(--sec-bg); padding: 15px; border-radius: 20px; margin-bottom: 30px; box-sizing: border-box; }
-        .shop-item { display: flex; justify-content: space-between; align-items: center; }
-        .shop-btn { background: var(--btn); color: var(--btn-text); border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        .shop-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        #coin {
+            width: 200px;
+            height: 200px;
+            background: orange;
+            border-radius: 50%;
+            margin: 50px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            box-shadow: 0 10px 0 #d35400;
+            cursor: pointer;
+        }
+        #coin:active { transform: translateY(5px); box-shadow: 0 5px 0 #d35400; }
+        .stats { font-size: 24px; font-weight: bold; }
+        .energy { color: gray; margin-top: 10px; }
+        .btn {
+            background: var(--tg-theme-button-color, #2481cc);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            width: 100%;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
-    <div class="stats">
-        <div id="balance">0</div>
-        <div style="color: var(--hint); font-size: 14px; letter-spacing: 1px;">МОНЕТИ</div>
-        <div style="margin-top:10px; font-size: 16px;">⚡ Енергія: <span id="energy-val">100</span>/100</div>
-    </div>
 
-    <div class="click-area">
-        <div class="circle" id="clicker">💰</div>
-    </div>
+    <div class="stats">Монети: <span id="balance">0</span></div>
+    <div class="energy">Енергія: <span id="energy">100</span>/100</div>
 
-    <div class="energy-box">
-        <div class="energy-bar"><div id="energy-fill"></div></div>
-    </div>
+    <div id="coin">💰</div>
 
-    <div class="shop">
-        <div class="shop-item">
-            <div>
-                <strong>Мульти-клік</strong><br>
-                <small id="price-tag" style="color: var(--hint)">Ціна: 50</small>
-            </div>
-            <button class="shop-btn" id="buy-upgrade">Купити</button>
-        </div>
-    </div>
+    <button class="btn" id="upgrade">Прокачати (Ціна: <span id="price">50</span>)</button>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
 
-        // Ініціалізація даних (з перевіркою на помилки в пам'яті)
-        let coins = parseFloat(localStorage.getItem('coins')) || 0;
-        let powerLevel = parseInt(localStorage.getItem('powerLevel')) || 0;
-        let energy = parseInt(localStorage.getItem('energy')) || 100;
-        let lastTime = parseInt(localStorage.getItem('lastTime')) || Date.now();
-        
-        const maxEnergy = 100;
-        const basePrice = 50;
-
-        // Фонове відновлення (1 од за 3 сек)
-        const diff = Math.floor((Date.now() - lastTime) / 1000);
-        const recovered = Math.floor(diff / 3);
-        energy = Math.min(maxEnergy, energy + recovered);
-
-        function getPrice() {return Math.floor(basePrice * Math.pow(1.75, powerLevel));
+        // Функція для безпечного отримання даних
+        function getData(key, def) {
+            try {
+                const res = localStorage.getItem(key);
+                return res !== null ? Number(res) : def;
+            } catch(e) { return def; }
         }
 
-        function save() {
+        let coins = getData('coins', 0);
+        let power = getData('power', 1);
+        let energy = getData('energy', 100);
+        let lastTime = getData('lastTime', Date.now());
+
+        // Відновлення енергії за час відсутності
+        const passed = Math.floor((Date.now() - lastTime) / 1000);
+        energy = Math.min(100, energy + Math.floor(passed / 3));
+
+        const balEl = document.getElementById('balance');
+        const enEl = document.getElementById('energy');
+        const priceEl = document.getElementById('price');
+
+        function update() {
+            balEl.innerText = Math.floor(coins);
+            enEl.innerText = energy;
+            const currentPrice = Math.floor(50 * Math.pow(1.75, power - 1));
+            priceEl.innerText = currentPrice;
+            
             localStorage.setItem('coins', coins);
-            localStorage.setItem('powerLevel', powerLevel);
+            localStorage.setItem('power', power);
             localStorage.setItem('energy', energy);
             localStorage.setItem('lastTime', Date.now());
         }
 
-        function updateUI() {
-            const price = getPrice();
-            document.getElementById('balance').innerText = Math.floor(coins).toLocaleString();
-            document.getElementById('energy-val').innerText = energy;
-            document.getElementById('energy-fill').style.width = (energy / maxEnergy * 100) + '%';
-            document.getElementById('price-tag').innerText = Ціна: ${price};
-            document.getElementById('buy-upgrade').disabled = coins < price;
-            save();
-        }
-
-        // Обробка кліку через 'pointerdown' (працює швидше на телефонах)
-        document.getElementById('clicker').addEventListener('pointerdown', (e) => {
+        // КЛІК (використовуємо 'touchstart' для миттєвої реакції)
+        document.getElementById('coin').addEventListener('touchstart', function(e) {
+            e.preventDefault(); // Заборона скролу
             if (energy > 0) {
-                coins += (1 + powerLevel);
-                energy--;
-                tg.HapticFeedback.impactOccurred('light');
-                updateUI();
-            } else {
-                tg.HapticFeedback.notificationOccurred('warning');
+                coins += power;
+                energy -= 1;
+                tg.HapticFeedback.impactOccurred('medium');
+                update();
             }
         });
 
-        document.getElementById('buy-upgrade').onclick = () => {
-            const price = getPrice();
-            if (coins >= price) {
-                coins -= price;
-                powerLevel++;
-                updateUI();
-                tg.showAlert("Рівень підвищено! Тепер клік сильніший.");
+        // АПГРЕЙД
+        document.getElementById('upgrade').onclick = function() {
+            const currentPrice = Math.floor(50 * Math.pow(1.75, power - 1));
+            if (coins >= currentPrice) {
+                coins -= currentPrice;
+                power += 1;
+                update();
+                tg.showAlert("Прокачано!");
             }
         };
 
-        // Відновлення в реальному часі
+        // Відновлення онлайн
         setInterval(() => {
-            if (energy < maxEnergy) {
+            if (energy < 100) {
                 energy++;
-                updateUI();
+                update();
             }
-        }, 3000);
-
-        // Перший запуск
-        updateUI();
+        }, 3000);update();
     </script>
 </body>
 </html>
