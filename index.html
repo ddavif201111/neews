@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Elite Clicker Ultra</title>
+    <title>Elite Clicker Fix</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
@@ -12,46 +12,52 @@
             --tg-text: var(--tg-theme-text-color, #ffffff);
             --tg-button: var(--tg-theme-button-color, #0088cc);
             --tg-sec-bg: var(--tg-theme-secondary-bg-color, #2c2c2c);
-            --tg-hint: var(--tg-theme-hint-color, #aaaaaa);
         }
         body {
-            font-family: 'Segoe UI', sans-serif; background-color: var(--tg-bg); color: var(--tg-text);
-            margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden;
-            user-select: none; touch-action: manipulation;
+            font-family: sans-serif; background: var(--tg-bg); color: var(--tg-text);
+            margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; 
+            overflow: hidden; touch-action: none; user-select: none;
         }
-        #ton-connect { position: absolute; top: 12px; right: 12px; transform: scale(0.8); z-index: 100; }
-        .header { width: 100%; padding: 20px 0 15px; text-align: center; background: var(--tg-sec-bg); border-radius: 0 0 20px 20px; position: relative; }
+        #ton-connect { position: absolute; top: 10px; right: 10px; z-index: 100; transform: scale(0.85); }
+        .header { width: 100%; padding: 20px 0; text-align: center; background: var(--tg-sec-bg); border-radius: 0 0 20px 20px; z-index: 10; }
         #balance { font-size: 44px; font-weight: 900; color: #ffdf00; margin: 0; }
-        .income-info { font-size: 12px; color: #4cd137; margin-top: 5px; }
-        .page { display: none; flex-direction: column; align-items: center; width: 100%; height: calc(100vh - 140px); overflow-y: auto; }
+        .page { display: none; flex-direction: column; align-items: center; width: 100%; height: calc(100vh - 140px); position: relative; }
         .page.active { display: flex; }
-        .click-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; position: relative; }
+        
+        /* КЛІКЕР */
+        .click-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; position: relative; touch-action: none; }
         #coin {
             width: 210px; height: 210px; background: radial-gradient(circle, #ffdf00 0%, #d4af37 100%);
             border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 80px;
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.3); transition: transform 0.05s; z-index: 5;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.4); transition: transform 0.05s;
+            cursor: pointer; touch-action: none; z-index: 50;
         }
-        #coin:active { transform: scale(0.92); }
-        .floating-text { position: absolute; color: #ffdf00; font-size: 30px; font-weight: bold; pointer-events: none; animation: floatUp 0.7s forwards; }
+        #coin:active { transform: scale(0.94); }
+
+        .floating-text { position: absolute; color: #ffdf00; font-size: 30px; font-weight: bold; pointer-events: none; animation: floatUp 0.6s ease-out forwards; z-index: 100; }
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
+
         .footer-ui { width: 85%; margin-bottom: 15px; }
-        .progress-bg { width: 100%; height: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; overflow: hidden; }
-        #progress-fill { height: 100%; width: 100%; background: orange; transition: width 0.2s; }
-        .shop-list { width: 90%; padding-top: 20px; }
+        .progress-bg { width: 100%; height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; }
+        #progress-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #ffdf00, #ff8c00); transition: width 0.1s; }
+
+        .shop-list { width: 90%; padding: 20px 0; }
         .shop-card { background: var(--tg-sec-bg); padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .buy-btn { background: var(--tg-button); color: white; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; min-width: 80px; }
+        .buy-btn { background: var(--tg-button); color: white; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; }
         .buy-btn:disabled { opacity: 0.4; }
-        .nav-bar { height: 70px; background: var(--tg-sec-bg); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); }
-        .nav-item { color: var(--tg-hint); display: flex; flex-direction: column; align-items: center; font-size: 12px; cursor: pointer; }
+
+        .nav-bar { height: 70px; background: var(--tg-sec-bg); display: flex; justify-content: space-around; align-items: center; z-index: 100; }
+        .nav-item { color: #888; display: flex; flex-direction: column; align-items: center; font-size: 12px; cursor: pointer; }
         .nav-item.active { color: var(--tg-button); }
     </style>
 </head>
 <body>
 
+    <div id="ton-connect"></div>
+
     <div class="header">
-        <div id="ton-connect"></div>
         <p id="balance">0</p>
-        <div class="income-info">Прибуток: +<span id="passive-val">0</span>/сек</div>
+        <div style="font-size: 12px; color: #4cd137;">Прибуток: +<span id="passive-val">0</span>/сек</div>
     </div>
 
     <div id="game-page" class="page active">
@@ -59,8 +65,8 @@
             <div id="coin">💰</div>
         </div>
         <div class="footer-ui">
-            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px;"><span>⚡ <span id="en-val">1000</span> / <span id="max-en-val">1000</span></span>
-                <span>Клік: <span id="pow-val">1</span></span>
+            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px;">
+                <span>⚡ <span id="en-val">1000</span> / <span id="max-en-val">1000</span></span><span>Клік: <span id="pow-val">1</span></span>
             </div>
             <div class="progress-bg"><div id="progress-fill"></div></div>
         </div>
@@ -73,44 +79,39 @@
                 <button class="buy-btn" id="buy-power">50</button>
             </div>
             <div class="shop-card">
-                <div><b>Ферма x1.5</b><br><small id="f-info">Дохід: 0/сек</small></div>
+                <div><b>Ферма x1.5</b><br><small id="f-info">0/сек</small></div>
                 <button class="buy-btn" id="buy-farm">150</button>
             </div>
             <div class="shop-card">
-                <div><b>Макс Енергія</b><br><small id="e-info">+500 ліміту</small></div>
+                <div><b>Енергія</b><br><small id="e-info">+500 ліміту</small></div>
                 <button class="buy-btn" id="buy-energy">100</button>
             </div>
         </div>
     </div>
 
     <div class="nav-bar">
-        <div class="nav-item active" onclick="showPage('game-page', this)"><span>🎮</span><span>Гра</span></div>
-        <div class="nav-item" onclick="showPage('shop-page', this)"><span>🛒</span><span>Магазин</span></div>
+        <div class="nav-item active" id="nav-game"><span>🎮</span><span>Гра</span></div>
+        <div class="nav-item" id="nav-shop"><span>🛒</span><span>Магазин</span></div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready(); tg.expand();
 
-        // TON Connect
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
             manifestUrl: 'https://raw.githubusercontent.com/ton-connect/demo-dapp/main/public/tonconnect-manifest.json',
             buttonRootId: 'ton-connect'
         });
 
-        // Дані
         let coins = Number(localStorage.getItem('c')) || 0;
         let pLvl = Number(localStorage.getItem('pl')) || 1;
         let fLvl = Number(localStorage.getItem('fl')) || 0;
         let eLvl = Number(localStorage.getItem('el')) || 0;
-        
         let maxEn = 1000 + (eLvl * 500);
         let energy = Number(localStorage.getItem('e')) ?? maxEn;
 
         function updateUI() {
-            // Формула сили кліку x1.5
             let power = Math.round(Math.pow(1.5, pLvl - 1));
-            // Формула доходу ферми x1.5 (базово 2)
             let passive = fLvl === 0 ? 0 : Math.round(2 * Math.pow(1.5, fLvl - 1));
             maxEn = 1000 + (eLvl * 500);
 
@@ -121,22 +122,13 @@
             document.getElementById('pow-val').innerText = power;
             document.getElementById('progress-fill').style.width = (energy / maxEn * 100) + '%';
 
-            // Ціни
-            let pPrice = Math.floor(50 * Math.pow(2, pLvl - 1));
-            let fPrice = Math.floor(150 * Math.pow(2.2, fLvl));
-            let ePrice = Math.floor(100 * Math.pow(2.5, eLvl));
+            document.getElementById('buy-power').innerText = Math.floor(50 * Math.pow(2, pLvl - 1));
+            document.getElementById('buy-farm').innerText = Math.floor(150 * Math.pow(2.2, fLvl));
+            document.getElementById('buy-energy').innerText = Math.floor(100 * Math.pow(2.5, eLvl));
 
-            document.getElementById('buy-power').innerText = pPrice;
-            document.getElementById('buy-farm').innerText = fPrice;
-            document.getElementById('buy-energy').innerText = ePrice;
-            
-            document.getElementById('p-info').innerText = Рівень ${pLvl} (Клік: ${power});
-            document.getElementById('f-info').innerText = Дохід: ${passive}/сек;
-            document.getElementById('e-info').innerText = Макс: ${maxEn};
-
-            document.getElementById('buy-power').disabled = coins < pPrice;
-            document.getElementById('buy-farm').disabled = coins < fPrice;
-            document.getElementById('buy-energy').disabled = coins < ePrice;
+            document.getElementById('buy-power').disabled = coins < (50 * Math.pow(2, pLvl - 1));
+            document.getElementById('buy-farm').disabled = coins < (150 * Math.pow(2.2, fLvl));
+            document.getElementById('buy-energy').disabled = coins < (100 * Math.pow(2.5, eLvl));
 
             localStorage.setItem('c', coins);
             localStorage.setItem('pl', pLvl);
@@ -145,51 +137,64 @@
             localStorage.setItem('e', energy);
         }
 
-        function showPage(pId, el) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(pId).classList.add('active');
-            el.classList.add('active');
-            tg.HapticFeedback.impactOccurred('light');
-        }
-
-        document.getElementById('coin').ontouchstart = (e) => {
-            e.preventDefault();
+        // КЛІК (основна функція)
+        function handleAction(clientX, clientY) {
             let power = Math.round(Math.pow(1.5, pLvl - 1));
             if (energy >= 1) {
-                coins += power; energy -= 1;
+                coins += power;
+                energy -= 1;
+                
                 const t = document.createElement('div');
-                t.className = 'floating-text'; t.innerText = '+' + power;
-                t.style.left = e.touches[0].clientX + 'px';
-                t.style.top = e.touches[0].clientY + 'px';
+                t.className = 'floating-text';
+                t.innerText = '+' + power;
+                t.style.left = clientX + 'px';
+                t.style.top = clientY + 'px';
                 document.getElementById('area').appendChild(t);
                 setTimeout(() => t.remove(), 600);
+                
                 tg.HapticFeedback.impactOccurred('medium');
                 updateUI();
             }
+        }
+
+        const coinBtn = document.getElementById('coin');
+        coinBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleAction(e.touches[0].clientX, e.touches[0].clientY);
+        });
+
+        // Навігація
+        document.getElementById('nav-game').onclick = () => {
+            document.getElementById('game-page').classList.add('active');
+            document.getElementById('shop-page').classList.remove('active');
+            document.getElementById('nav-game').classList.add('active');
+            document.getElementById('nav-shop').classList.remove('active');
+        };
+        document.getElementById('nav-shop').onclick = () => {
+            document.getElementById('shop-page').classList.add('active');
+            document.getElementById('game-page').classList.remove('active');
+            document.getElementById('nav-shop').classList.add('active');
+            document.getElementById('nav-game').classList.remove('active');
         };
 
         // Купівля
         document.getElementById('buy-power').onclick = () => {
-            let price = Math.floor(50 * Math.pow(2, pLvl - 1));
-            if (coins >= price) { coins -= price; pLvl++; updateUI(); tg.HapticFeedback.notificationOccurred('success'); }
+            let pr = Math.floor(50 * Math.pow(2, pLvl - 1));
+            if (coins >= pr) { coins -= pr; pLvl++; updateUI(); }
         };
-
         document.getElementById('buy-farm').onclick = () => {
-            let price = Math.floor(150 * Math.pow(2.2, fLvl));
-            if (coins >= price) { coins -= price; fLvl++; updateUI(); tg.HapticFeedback.notificationOccurred('success'); }
+            let pr = Math.floor(150 * Math.pow(2.2, fLvl));
+            if (coins >= pr) { coins -= pr; fLvl++; updateUI(); }
         };
-
         document.getElementById('buy-energy').onclick = () => {
-            let price = Math.floor(100 * Math.pow(2.5, eLvl));
-            if (coins >= price) { coins -= price; eLvl++; energy = 1000 + (eLvl * 500); updateUI(); tg.HapticFeedback.notificationOccurred('success'); }
+            let pr = Math.floor(100 * Math.pow(2.5, eLvl));
+            if (coins >= pr) { coins -= pr; eLvl++; energy = 1000 + (eLvl * 500); updateUI(); }
         };
 
-        // Цикл гри
         setInterval(() => {
             let passive = fLvl === 0 ? 0 : Math.round(2 * Math.pow(1.5, fLvl - 1));
             if (passive > 0) coins += (passive / 10);
-            if (energy < maxEn) energy = Math.min(maxEn, energy + 1); // Швидка регенерація
+            if (energy < maxEn) energy = Math.min(maxEn, energy + 1);
             updateUI();
         }, 100);
 
