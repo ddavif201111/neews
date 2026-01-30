@@ -3,87 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Crypto Clicker Mini App</title>
+    <title>Clicker Pro</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --primary-color: #2481cc;
-            --bg-color: var(--tg-theme-bg-color, #ffffff);
-            --text-color: var(--tg-theme-text-color, #222222);
+            --bg: var(--tg-theme-bg-color, #ffffff);
+            --text: var(--tg-theme-text-color, #222);
+            --hint: var(--tg-theme-hint-color, #999);
+            --btn: var(--tg-theme-button-color, #2481cc);
+            --btn-text: var(--tg-theme-button-text-color, #fff);
             --sec-bg: var(--tg-theme-secondary-bg-color, #f0f0f0);
         }
 
         body {
-            font-family: sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            font-family: -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
             margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
+            height: 100vh;
+            overflow: hidden;
             user-select: none;
         }
 
-        .header {
+        .stats {
             width: 100%;
             padding: 20px;
-            text-align: center;
             background: var(--sec-bg);
-            border-bottom-left-radius: 20px;
-            border-bottom-right-radius: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        .stats-container {
-            display: flex;
-            justify-content: space-around;
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        .stat-box {
-            font-size: 14px;
-            color: var(--tg-theme-hint-color, #999);
+            text-align: center;
+            border-bottom-left-radius: 25px;
+            border-bottom-right-radius: 25px;
         }
 
         #balance {
-            font-size: 42px;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin: 10px 0;
+            font-size: 48px;
+            font-weight: 800;
+            margin: 5px 0;
+            color: var(--btn);
         }
 
-        /* Кнопка Клікер */
-        .coin-btn {
-            margin-top: 40px;
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, #ffcc00, #f39c12);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 80px;
-            box-shadow: 0 10px 0 #d35400, 0 15px 20px rgba(0,0,0,0.2);
-            cursor: pointer;
-            transition: transform 0.1s, box-shadow 0.1s;
-        }
-
-        .coin-btn:active {
-            transform: translateY(5px);
-            box-shadow: 0 5px 0 #d35400, 0 5px 10px rgba(0,0,0,0.2);
-        }
-
-        /* Енергія */
-        .energy-container {
+        .energy-box {
             width: 80%;
-            margin-top: 30px;
+            margin: 20px 0;
         }
 
         .energy-bar {
             width: 100%;
-            height: 15px;
-            background: #e0e0e0;
+            height: 12px;
+            background: #ddd;
             border-radius: 10px;
             overflow: hidden;
         }
@@ -91,56 +60,79 @@
         #energy-fill {
             height: 100%;
             width: 100%;
-            background: linear-gradient(90deg, #34e89e, #0f3443);
-            transition: width 0.3s;
+            background: linear-gradient(90deg, #ffcc00, #ff9500);
+            transition: width 0.2s;
         }
 
-        /* Магазин */
+        .click-area {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .circle {
+            width: 220px;
+            height: 220px;
+            background: radial-gradient(circle, #ffd700, #ff8c00);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 100px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: transform 0.05s;
+        }
+
+        .circle:active {
+            transform: scale(0.95);
+        }
+
         .shop {
-            margin-top: 30px;
             width: 90%;
-            padding: 15px;
             background: var(--sec-bg);
-            border-radius: 15px;
+            padding: 15px;
+            border-radius: 20px;
+            margin-bottom: 20px;
         }
 
         .shop-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
         }
 
-        .shop-item button {
-            background: var(--primary-color);
-            color: white;
+        .shop-btn {
+            background: var(--btn);
+            color: var(--btn-text);
             border: none;
             padding: 8px 15px;
-            border-radius: 8px;
+            border-radius: 10px;
             font-weight: bold;
         }
 
-        .disabled {
+        .shop-btn:disabled {
             opacity: 0.5;
-            pointer-events: none;
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
+    <div class="stats">
         <div id="balance">0</div>
-        <div class="stat-box">МОНЕТИ</div>
-        <div class="stats-container">
-            <div class="stat-box">Клік: <span id="per-click">1</span></div>
-            <div class="stat-box">Енергія: <span id="energy-text">100/100</span></div>
-        </div>
+        <div style="font-size: 14px; color: var(--hint);">МОНЕТИ</div>
+        <div style="margin-top: 10px; font-weight: bold;">Енергія: <span id="energy-val">100</span>/100</div>
     </div>
 
-    <div class="coin-btn" id="click-btn">💰</div>
+    <div class="click-area">
+        <div class="circle" id="clicker">💰</div>
+    </div>
 
-    <div class="energy-container">
+    <div class="energy-box">
         <div class="energy-bar">
             <div id="energy-fill"></div>
         </div>
@@ -148,79 +140,73 @@
 
     <div class="shop">
         <div class="shop-item">
-            <div><strong>Мультиплікатор x2</strong><br>
-                <small>Ціна: 100 монет</small>
+            <div>
+                <strong>Мульти-клік x2</strong><br>
+                <small id="price-x2">Ціна: 50</small>
             </div>
-            <button id="buy-x2">Купити</button>
+            <button class="shop-btn" id="buy-x2">Купити</button>
         </div>
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.ready();
+        const tg = window.Telegram.WebApp;tg.ready();
         tg.expand();
 
-        // Стан гри
-        let coins = 0;
-        let energy = 100;
+        // Завантаження даних або початкові значення
+        let coins = Number(localStorage.getItem('coins')) || 0;
+        let energy = Number(localStorage.getItem('energy')) || 100;
+        let power = Number(localStorage.getItem('power')) || 1;
         const maxEnergy = 100;
-        let multiplier = 1;
 
         const balanceEl = document.getElementById('balance');
-        const energyText = document.getElementById('energy-text');
+        const energyVal = document.getElementById('energy-val');
         const energyFill = document.getElementById('energy-fill');
-        const perClickEl = document.getElementById('per-click');
-        const clickBtn = document.getElementById('click-btn');
+        const clicker = document.getElementById('clicker');
         const buyX2Btn = document.getElementById('buy-x2');
 
-        // Функція кліку
-        clickBtn.addEventListener('click', () => {
-            if (energy > 0) {
-                coins += (1 * multiplier);
-                energy -= 1;
-                updateUI();
-                tg.HapticFeedback.impactOccurred('medium');
-            } else {
-                tg.showAlert("Енергія закінчилась! Почекайте відновлення.");
-            }
-        });
-
-        // Купівля x2
-        buyX2Btn.addEventListener('click', () => {
-            if (coins >= 100) {
-                coins -= 100;
-                multiplier *= 2;
-                buyX2Btn.innerText = "Куплено";
-                buyX2Btn.classList.add('disabled');
-                updateUI();
-                tg.showAlert("Вітаємо! Тепер ви отримуєте вдвічі більше монет!");
-            } else {
-                tg.showAlert("Недостатньо монет!");
-            }
-        });
-
-        // Оновлення інтерфейсу
         function updateUI() {
             balanceEl.innerText = Math.floor(coins);
-            energyText.innerText = ${energy}/${maxEnergy};
-            energyFill.style.width = ${(energy / maxEnergy) * 100}%;
-            perClickEl.innerText = 1 * multiplier;
+            energyVal.innerText = energy;
+            energyFill.style.width = (energy / maxEnergy * 100) + '%';
+            
+            // Збереження в пам'ять браузера
+            localStorage.setItem('coins', coins);
+            localStorage.setItem('energy', energy);
+            localStorage.setItem('power', power);
 
-            // Відключаємо кнопку магазину якщо мало грошей
-            if (coins < 100 && buyX2Btn.innerText !== "Куплено") {
-                buyX2Btn.style.opacity = "0.5";
-            } else {
-                buyX2Btn.style.opacity = "1";
-            }
+            // Кнопка магазину
+            buyX2Btn.disabled = coins < 50;
         }
 
-        // Відновлення енергії (1 одиниця кожні 2 секунди)
+        // Клік
+        clicker.addEventListener('click', (e) => {
+            if (energy > 0) {
+                coins += power;
+                energy -= 1;
+                tg.HapticFeedback.impactOccurred('light');
+                updateUI();
+            } else {
+                tg.HapticFeedback.notificationOccurred('error');
+            }
+        });
+
+        // Купівля апгрейду
+        buyX2Btn.addEventListener('click', () => {
+            if (coins >= 50) {
+                coins -= 50;
+                power += 1;
+                updateUI();
+                tg.showAlert("Потужність кліку збільшена!");
+            }
+        });
+
+        // Відновлення енергії
         setInterval(() => {
             if (energy < maxEnergy) {
-                energy += 1;
+                energy++;
                 updateUI();
             }
-        }, 2000);
+        }, 1500);
 
         updateUI();
     </script>
