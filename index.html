@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Elite Clicker Fix</title>
+    <title>Elite Clicker AFK</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
@@ -19,34 +19,26 @@
             overflow: hidden; touch-action: none; user-select: none;
         }
         #ton-connect { position: absolute; top: 10px; right: 10px; z-index: 100; transform: scale(0.85); }
-        .header { width: 100%; padding: 20px 0; text-align: center; background: var(--tg-sec-bg); border-radius: 0 0 20px 20px; z-index: 10; }
+        .header { width: 100%; padding: 20px 0; text-align: center; background: var(--tg-sec-bg); border-radius: 0 0 20px 20px; }
         #balance { font-size: 44px; font-weight: 900; color: #ffdf00; margin: 0; }
         .page { display: none; flex-direction: column; align-items: center; width: 100%; height: calc(100vh - 140px); position: relative; }
         .page.active { display: flex; }
-        
-        /* КЛІКЕР */
         .click-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; position: relative; touch-action: none; }
         #coin {
             width: 210px; height: 210px; background: radial-gradient(circle, #ffdf00 0%, #d4af37 100%);
             border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 80px;
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.4); transition: transform 0.05s;
-            cursor: pointer; touch-action: none; z-index: 50;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.4); transition: transform 0.05s; z-index: 50;
         }
         #coin:active { transform: scale(0.94); }
-
         .floating-text { position: absolute; color: #ffdf00; font-size: 30px; font-weight: bold; pointer-events: none; animation: floatUp 0.6s ease-out forwards; z-index: 100; }
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
-
         .footer-ui { width: 85%; margin-bottom: 15px; }
         .progress-bg { width: 100%; height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; }
         #progress-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #ffdf00, #ff8c00); transition: width 0.1s; }
-
         .shop-list { width: 90%; padding: 20px 0; }
         .shop-card { background: var(--tg-sec-bg); padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .buy-btn { background: var(--tg-button); color: white; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; }
-        .buy-btn:disabled { opacity: 0.4; }
-
-        .nav-bar { height: 70px; background: var(--tg-sec-bg); display: flex; justify-content: space-around; align-items: center; z-index: 100; }
+        .nav-bar { height: 70px; background: var(--tg-sec-bg); display: flex; justify-content: space-around; align-items: center; }
         .nav-item { color: #888; display: flex; flex-direction: column; align-items: center; font-size: 12px; cursor: pointer; }
         .nav-item.active { color: var(--tg-button); }
     </style>
@@ -66,13 +58,12 @@
         </div>
         <div class="footer-ui">
             <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px;">
-                <span>⚡ <span id="en-val">1000</span> / <span id="max-en-val">1000</span></span><span>Клік: <span id="pow-val">1</span></span>
+                <span>⚡ <span id="en-val">1000</span> / <span id="max-en-val">1000</span></span>
+                <span>Клік: <span id="pow-val">1</span></span>
             </div>
             <div class="progress-bg"><div id="progress-fill"></div></div>
         </div>
-    </div>
-
-    <div id="shop-page" class="page">
+    </div><div id="shop-page" class="page">
         <div class="shop-list">
             <div class="shop-card">
                 <div><b>Мульти-клік x1.5</b><br><small id="p-info">Рівень 1</small></div>
@@ -103,12 +94,32 @@
             buttonRootId: 'ton-connect'
         });
 
+        // Завантаження даних
         let coins = Number(localStorage.getItem('c')) || 0;
         let pLvl = Number(localStorage.getItem('pl')) || 1;
         let fLvl = Number(localStorage.getItem('fl')) || 0;
         let eLvl = Number(localStorage.getItem('el')) || 0;
+        let lastTime = Number(localStorage.getItem('lt')) || Date.now();
+
         let maxEn = 1000 + (eLvl * 500);
         let energy = Number(localStorage.getItem('e')) ?? maxEn;
+
+        // --- ЛОГІКА AFK ---
+        function checkAFK() {
+            const now = Date.now();
+            const secondsOffline = Math.floor((now - lastTime) / 1000);
+            
+            if (secondsOffline > 10 && fLvl > 0) {
+                let passiveRate = Math.round(2 * Math.pow(1.5, fLvl - 1));
+                let earned = secondsOffline * passiveRate;
+                coins += earned;
+                
+                // Нараховуємо також енергію за час відсутності
+                energy = Math.min(maxEn, energy + (secondsOffline * 2)); 
+                
+                tg.showAlert(`Тебе не було ${Math.floor(secondsOffline/60)} хв.\nФерма назбирала: ${earned.toLocaleString()} 💰`);
+            }
+        }
 
         function updateUI() {
             let power = Math.round(Math.pow(1.5, pLvl - 1));
@@ -135,35 +146,29 @@
             localStorage.setItem('fl', fLvl);
             localStorage.setItem('el', eLvl);
             localStorage.setItem('e', energy);
+            localStorage.setItem('lt', Date.now()); // Оновлюємо час останньої активності
         }
 
-        // КЛІК (основна функція)
-        function handleAction(clientX, clientY) {
+        // Клікfunction handleAction(clientX, clientY) {
             let power = Math.round(Math.pow(1.5, pLvl - 1));
             if (energy >= 1) {
-                coins += power;
-                energy -= 1;
-                
+                coins += power; energy -= 1;
                 const t = document.createElement('div');
-                t.className = 'floating-text';
-                t.innerText = '+' + power;
-                t.style.left = clientX + 'px';
-                t.style.top = clientY + 'px';
+                t.className = 'floating-text'; t.innerText = '+' + power;
+                t.style.left = clientX + 'px'; t.style.top = clientY + 'px';
                 document.getElementById('area').appendChild(t);
                 setTimeout(() => t.remove(), 600);
-                
                 tg.HapticFeedback.impactOccurred('medium');
                 updateUI();
             }
         }
 
-        const coinBtn = document.getElementById('coin');
-        coinBtn.addEventListener('touchstart', (e) => {
+        document.getElementById('coin').addEventListener('touchstart', (e) => {
             e.preventDefault();
             handleAction(e.touches[0].clientX, e.touches[0].clientY);
         });
 
-        // Навігація
+        // Кнопки сторінок
         document.getElementById('nav-game').onclick = () => {
             document.getElementById('game-page').classList.add('active');
             document.getElementById('shop-page').classList.remove('active');
@@ -191,6 +196,7 @@
             if (coins >= pr) { coins -= pr; eLvl++; energy = 1000 + (eLvl * 500); updateUI(); }
         };
 
+        // Цикл гри (пасив та реген)
         setInterval(() => {
             let passive = fLvl === 0 ? 0 : Math.round(2 * Math.pow(1.5, fLvl - 1));
             if (passive > 0) coins += (passive / 10);
@@ -198,6 +204,8 @@
             updateUI();
         }, 100);
 
+        // Перевірка при старті
+        checkAFK();
         updateUI();
     </script>
 </body>
