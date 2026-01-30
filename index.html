@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Telegram Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <style>
+        /* Використовуємо змінні Telegram для автоматичної зміни теми */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #222222);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .user-card {
+            background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .balance-section {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+            color: var(--tg-theme-button-color, #2481cc);
+        }
+
+        .main-button {
+            background-color: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: opacity 0.2s;
+        }
+
+        .main-button:active {
+            opacity: 0.8;
+        }
+
+        .hint {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #999999);
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="user-card">
+            <h2 id="greeting">Привіт!</h2>
+            <p>Ваш статус: <span id="status">Користувач</span></p>
+        </div>
+
+        <div class="balance-section">
+            <span id="balance">0</span> ⭐
+        </div>
+
+        <button class="main-button" id="action-btn">Заробити (Дивитись рекламу)</button>
+        
+        <p class="hint">Всі виплати проводяться автоматично на ваш гаманець TON</p>
+    </div>
+
+    <script>
+        // Ініціалізація Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        // Отримуємо дані користувача
+        const user = tg.initDataUnsafe?.user;
+        if (user) {
+            document.getElementById('greeting').innerText = Привіт, ${user.first_name}!;
+        }
+
+        // Логіка кнопки
+        const btn = document.getElementById('action-btn');
+        let balance = 0;
+
+        btn.addEventListener('click', () => {
+            // Тут буде виклик Adsgram або іншої реклами
+            tg.showConfirm("Бажаєте подивитися рекламу, щоб отримати 5 ⭐?", (confirmed) => {
+                if (confirmed) {
+                    // Симуляція перегляду
+                    balance += 5;
+                    document.getElementById('balance').innerText = balance;
+                    tg.showAlert("Ви отримали 5 зірок!");
+                    
+                    // Вібровідгук (Haptic Feedback) - дуже крута фішка TMA
+                    tg.HapticFeedback.notificationOccurred('success');
+                }
+            });
+        });
+
+        // Налаштування головної кнопки Telegram (внизу екрана)
+        tg.MainButton.setText("ВИВЕСТИ КОШТИ");
+        tg.MainButton.hide(); // Покажемо її, коли баланс буде > 50
+
+        // Слідкуємо за балансом
+        setInterval(() => {
+            if (balance >= 50) {
+                tg.MainButton.show();
+            }
+        }, 1000);
+
+        tg.MainButton.onClick(() => {
+            tg.showAlert("Функція виводу буде доступна після підключення гаманця!");
+        });
+    </script>
+</body>
+</html>
