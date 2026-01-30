@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Elite Clicker AFK</title>
+    <title>Elite Clicker Ultra Fix</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
@@ -14,33 +14,41 @@
             --tg-sec-bg: var(--tg-theme-secondary-bg-color, #2c2c2c);
         }
         body {
-            font-family: sans-serif; background: var(--tg-bg); color: var(--tg-text);
+            font-family: 'Segoe UI', sans-serif; background: var(--tg-bg); color: var(--tg-text);
             margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; 
             overflow: hidden; touch-action: none; user-select: none;
         }
-        #ton-connect { position: absolute; top: 10px; right: 10px; z-index: 100; transform: scale(0.85); }
-        .header { width: 100%; padding: 20px 0; text-align: center; background: var(--tg-sec-bg); border-radius: 0 0 20px 20px; }
-        #balance { font-size: 44px; font-weight: 900; color: #ffdf00; margin: 0; }
+        #ton-connect { position: absolute; top: 10px; right: 10px; z-index: 100; transform: scale(0.8); }
+        .header { width: 100%; padding: 25px 0 15px; text-align: center; background: var(--tg-sec-bg); border-radius: 0 0 20px 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        #balance { font-size: 44px; font-weight: 900; color: #ffdf00; margin: 0; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
         .page { display: none; flex-direction: column; align-items: center; width: 100%; height: calc(100vh - 140px); position: relative; }
         .page.active { display: flex; }
-        .click-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; position: relative; touch-action: none; }
+        .click-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; touch-action: none; }
+        
+        /* КНОПКА МОНЕТИ */
         #coin {
-            width: 210px; height: 210px; background: radial-gradient(circle, #ffdf00 0%, #d4af37 100%);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 80px;
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.4); transition: transform 0.05s; z-index: 50;
+            width: 220px; height: 220px; background: radial-gradient(circle, #ffdf00 0%, #d4af37 100%);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 90px;
+            box-shadow: 0 0 40px rgba(212, 175, 55, 0.4); transition: transform 0.05s;
+            touch-action: none; z-index: 50; cursor: pointer;
         }
-        #coin:active { transform: scale(0.94); }
-        .floating-text { position: absolute; color: #ffdf00; font-size: 30px; font-weight: bold; pointer-events: none; animation: floatUp 0.6s ease-out forwards; z-index: 100; }
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
+        #coin:active { transform: scale(0.92); }
+
+        .floating-text { position: absolute; color: #ffdf00; font-size: 32px; font-weight: bold; pointer-events: none; animation: floatUp 0.6s forwards; z-index: 100; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-130px); } }
+
         .footer-ui { width: 85%; margin-bottom: 15px; }
         .progress-bg { width: 100%; height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; }
         #progress-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #ffdf00, #ff8c00); transition: width 0.1s; }
+
         .shop-list { width: 90%; padding: 20px 0; }
-        .shop-card { background: var(--tg-sec-bg); padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .buy-btn { background: var(--tg-button); color: white; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; }
-        .nav-bar { height: 70px; background: var(--tg-sec-bg); display: flex; justify-content: space-around; align-items: center; }
-        .nav-item { color: #888; display: flex; flex-direction: column; align-items: center; font-size: 12px; cursor: pointer; }
-        .nav-item.active { color: var(--tg-button); }
+        .shop-card { background: var(--tg-sec-bg); padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.05); }
+        .buy-btn { background: var(--tg-button); color: white; border: none; padding: 10px 18px; border-radius: 10px; font-weight: bold; }
+        .buy-btn:disabled { opacity: 0.3; }
+
+        .nav-bar { height: 70px; background: var(--tg-sec-bg); display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -4px 10px rgba(0,0,0,0.2); }
+        .nav-item { color: #888; display: flex; flex-direction: column; align-items: center; font-size: 12px; cursor: pointer; transition: 0.2s; }
+        .nav-item.active { color: var(--tg-button); transform: translateY(-2px); }
     </style>
 </head>
 <body>
@@ -49,28 +57,29 @@
 
     <div class="header">
         <p id="balance">0</p>
-        <div style="font-size: 12px; color: #4cd137;">Прибуток: +<span id="passive-val">0</span>/сек</div>
+        <div style="font-size: 12px; color: #4cd137; font-weight: bold;">+<span id="passive-val">0</span> / СЕК</div>
     </div>
 
     <div id="game-page" class="page active">
         <div class="click-area" id="area">
             <div id="coin">💰</div>
         </div>
-        <div class="footer-ui">
-            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px;">
+        <div class="footer-ui"><div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; font-weight: bold;">
                 <span>⚡ <span id="en-val">1000</span> / <span id="max-en-val">1000</span></span>
-                <span>Клік: <span id="pow-val">1</span></span>
+                <span>КЛІК: <span id="pow-val">1</span></span>
             </div>
             <div class="progress-bg"><div id="progress-fill"></div></div>
         </div>
-    </div><div id="shop-page" class="page">
+    </div>
+
+    <div id="shop-page" class="page">
         <div class="shop-list">
             <div class="shop-card">
                 <div><b>Мульти-клік x1.5</b><br><small id="p-info">Рівень 1</small></div>
                 <button class="buy-btn" id="buy-power">50</button>
             </div>
             <div class="shop-card">
-                <div><b>Ферма x1.5</b><br><small id="f-info">0/сек</small></div>
+                <div><b>Ферма x1.5 (AFK)</b><br><small id="f-info">0 / сек</small></div>
                 <button class="buy-btn" id="buy-farm">150</button>
             </div>
             <div class="shop-card">
@@ -81,57 +90,41 @@
     </div>
 
     <div class="nav-bar">
-        <div class="nav-item active" id="nav-game"><span>🎮</span><span>Гра</span></div>
-        <div class="nav-item" id="nav-shop"><span>🛒</span><span>Магазин</span></div>
+        <div class="nav-item active" id="nav-game"><span>🎮</span><br>ГРА</div>
+        <div class="nav-item" id="nav-shop"><span>🛒</span><br>МАГАЗИН</div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready(); tg.expand();
 
+        // TON Connect
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
             manifestUrl: 'https://raw.githubusercontent.com/ton-connect/demo-dapp/main/public/tonconnect-manifest.json',
             buttonRootId: 'ton-connect'
         });
 
-        // Завантаження даних
+        // Ініціалізація даних з перевіркою
         let coins = Number(localStorage.getItem('c')) || 0;
         let pLvl = Number(localStorage.getItem('pl')) || 1;
         let fLvl = Number(localStorage.getItem('fl')) || 0;
         let eLvl = Number(localStorage.getItem('el')) || 0;
         let lastTime = Number(localStorage.getItem('lt')) || Date.now();
 
-        let maxEn = 1000 + (eLvl * 500);
-        let energy = Number(localStorage.getItem('e')) ?? maxEn;
+        function getPower() { return Math.round(Math.pow(1.5, pLvl - 1)); }
+        function getPassive() { return fLvl === 0 ? 0 : Math.round(2 * Math.pow(1.5, fLvl - 1)); }
+        function getMaxEn() { return 1000 + (eLvl * 500); }
 
-        // --- ЛОГІКА AFK ---
-        function checkAFK() {
-            const now = Date.now();
-            const secondsOffline = Math.floor((now - lastTime) / 1000);
-            
-            if (secondsOffline > 10 && fLvl > 0) {
-                let passiveRate = Math.round(2 * Math.pow(1.5, fLvl - 1));
-                let earned = secondsOffline * passiveRate;
-                coins += earned;
-                
-                // Нараховуємо також енергію за час відсутності
-                energy = Math.min(maxEn, energy + (secondsOffline * 2)); 
-                
-                tg.showAlert(`Тебе не було ${Math.floor(secondsOffline/60)} хв.\nФерма назбирала: ${earned.toLocaleString()} 💰`);
-            }
-        }
+        let energy = Number(localStorage.getItem('e'));
+        if (energy === null || isNaN(energy)) energy = getMaxEn();
 
         function updateUI() {
-            let power = Math.round(Math.pow(1.5, pLvl - 1));
-            let passive = fLvl === 0 ? 0 : Math.round(2 * Math.pow(1.5, fLvl - 1));
-            maxEn = 1000 + (eLvl * 500);
-
             document.getElementById('balance').innerText = Math.floor(coins).toLocaleString();
-            document.getElementById('passive-val').innerText = passive;
+            document.getElementById('passive-val').innerText = getPassive();
             document.getElementById('en-val').innerText = Math.floor(energy);
-            document.getElementById('max-en-val').innerText = maxEn;
-            document.getElementById('pow-val').innerText = power;
-            document.getElementById('progress-fill').style.width = (energy / maxEn * 100) + '%';
+            document.getElementById('max-en-val').innerText = getMaxEn();
+            document.getElementById('pow-val').innerText = getPower();
+            document.getElementById('progress-fill').style.width = (energy / getMaxEn() * 100) + '%';
 
             document.getElementById('buy-power').innerText = Math.floor(50 * Math.pow(2, pLvl - 1));
             document.getElementById('buy-farm').innerText = Math.floor(150 * Math.pow(2.2, fLvl));
@@ -146,29 +139,41 @@
             localStorage.setItem('fl', fLvl);
             localStorage.setItem('el', eLvl);
             localStorage.setItem('e', energy);
-            localStorage.setItem('lt', Date.now()); // Оновлюємо час останньої активності
+            localStorage.setItem('lt', Date.now());
         }
 
-        // Клікfunction handleAction(clientX, clientY) {
-            let power = Math.round(Math.pow(1.5, pLvl - 1));
+        // --- ГОЛОВНА ФУНКЦІЯ КЛІКУ ---
+        function clickAction(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            let p = getPower();
             if (energy >= 1) {
-                coins += power; energy -= 1;
+                coins += p;
+                energy -= 1;// Анімація
+                const rect = document.getElementById('coin').getBoundingClientRect();
                 const t = document.createElement('div');
-                t.className = 'floating-text'; t.innerText = '+' + power;
-                t.style.left = clientX + 'px'; t.style.top = clientY + 'px';
+                t.className = 'floating-text';
+                t.innerText = '+' + p;
+                // Центруємо анімацію по монеті
+                t.style.left = (rect.left + rect.width/2) + 'px';
+                t.style.top = (rect.top + rect.height/2) + 'px';
+                
                 document.getElementById('area').appendChild(t);
                 setTimeout(() => t.remove(), 600);
+                
                 tg.HapticFeedback.impactOccurred('medium');
                 updateUI();
             }
+            return false;
         }
 
-        document.getElementById('coin').addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            handleAction(e.touches[0].clientX, e.touches[0].clientY);
-        });
+        // Встановлюємо обробники миттєво
+        const coin = document.getElementById('coin');
+        coin.ontouchstart = clickAction; 
+        coin.onclick = (e) => e.preventDefault(); // Вимикаємо стандартний клік браузера
 
-        // Кнопки сторінок
+        // Навігація
         document.getElementById('nav-game').onclick = () => {
             document.getElementById('game-page').classList.add('active');
             document.getElementById('shop-page').classList.remove('active');
@@ -182,30 +187,37 @@
             document.getElementById('nav-game').classList.remove('active');
         };
 
-        // Купівля
+        // Магазин
         document.getElementById('buy-power').onclick = () => {
             let pr = Math.floor(50 * Math.pow(2, pLvl - 1));
-            if (coins >= pr) { coins -= pr; pLvl++; updateUI(); }
+            if (coins >= pr) { coins -= pr; pLvl++; updateUI(); tg.HapticFeedback.notificationOccurred('success'); }
         };
         document.getElementById('buy-farm').onclick = () => {
             let pr = Math.floor(150 * Math.pow(2.2, fLvl));
-            if (coins >= pr) { coins -= pr; fLvl++; updateUI(); }
+            if (coins >= pr) { coins -= pr; fLvl++; updateUI(); tg.HapticFeedback.notificationOccurred('success'); }
         };
         document.getElementById('buy-energy').onclick = () => {
             let pr = Math.floor(100 * Math.pow(2.5, eLvl));
-            if (coins >= pr) { coins -= pr; eLvl++; energy = 1000 + (eLvl * 500); updateUI(); }
+            if (coins >= pr) { coins -= pr; eLvl++; energy = getMaxEn(); updateUI(); tg.HapticFeedback.notificationOccurred('success'); }
         };
 
-        // Цикл гри (пасив та реген)
+        // AFK Розрахунок при старті
+        const secondsOffline = Math.floor((Date.now() - lastTime) / 1000);
+        if (secondsOffline > 15 && fLvl > 0) {
+            let earned = secondsOffline * getPassive();
+            coins += earned;
+            energy = Math.min(getMaxEn(), energy + (secondsOffline * 2));
+            tg.showAlert(`Поки тебе не було, ферма принесла: ${earned.toLocaleString()} 💰`);
+        }
+
+        // Постійний цикл (пасив + реген)
         setInterval(() => {
-            let passive = fLvl === 0 ? 0 : Math.round(2 * Math.pow(1.5, fLvl - 1));
-            if (passive > 0) coins += (passive / 10);
-            if (energy < maxEn) energy = Math.min(maxEn, energy + 1);
+            let pas = getPassive();
+            if (pas > 0) coins += (pas / 10);
+            if (energy < getMaxEn()) energy = Math.min(getMaxEn(), energy + 1);
             updateUI();
         }, 100);
 
-        // Перевірка при старті
-        checkAFK();
         updateUI();
     </script>
 </body>
