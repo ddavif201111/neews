@@ -3,128 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Telegram Mini App</title>
+    <title>Crypto Clicker Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
     <style>
-        /* Використовуємо змінні Telegram для автоматичної зміни теми */
+        :root {
+            --primary-color: #2481cc;
+            --bg-color: var(--tg-theme-bg-color, #ffffff);
+            --text-color: var(--tg-theme-text-color, #222222);
+            --sec-bg: var(--tg-theme-secondary-bg-color, #f0f0f0);
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #222222);
+            font-family: sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             margin: 0;
-            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            user-select: none;
+        }
+
+        .header {
+            width: 100%;
+            padding: 20px;
             text-align: center;
+            background: var(--sec-bg);
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
-        .container {
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
             width: 100%;
-            max-width: 400px;
-        }
-
-        .user-card {
-            background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            padding: 15px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-        }
-
-        .balance-section {
-            font-size: 24px;
-            font-weight: bold;
-            margin: 20px 0;
-            color: var(--tg-theme-button-color, #2481cc);
-        }
-
-        .main-button {
-            background-color: var(--tg-theme-button-color, #2481cc);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            border: none;
-            padding: 15px 30px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            transition: opacity 0.2s;
-        }
-
-        .main-button:active {
-            opacity: 0.8;
-        }
-
-        .hint {
-            font-size: 12px;
-            color: var(--tg-theme-hint-color, #999999);
             margin-top: 10px;
+        }
+
+        .stat-box {
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #999);
+        }
+
+        #balance {
+            font-size: 42px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 10px 0;
+        }
+
+        /* Кнопка Клікер */
+        .coin-btn {
+            margin-top: 40px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, #ffcc00, #f39c12);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            box-shadow: 0 10px 0 #d35400, 0 15px 20px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .coin-btn:active {
+            transform: translateY(5px);
+            box-shadow: 0 5px 0 #d35400, 0 5px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Енергія */
+        .energy-container {
+            width: 80%;
+            margin-top: 30px;
+        }
+
+        .energy-bar {
+            width: 100%;
+            height: 15px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #energy-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #34e89e, #0f3443);
+            transition: width 0.3s;
+        }
+
+        /* Магазин */
+        .shop {
+            margin-top: 30px;
+            width: 90%;
+            padding: 15px;
+            background: var(--sec-bg);
+            border-radius: 15px;
+        }
+
+        .shop-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .shop-item button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .disabled {
+            opacity: 0.5;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="user-card">
-            <h2 id="greeting">Привіт!</h2>
-            <p>Ваш статус: <span id="status">Користувач</span></p>
+    <div class="header">
+        <div id="balance">0</div>
+        <div class="stat-box">МОНЕТИ</div>
+        <div class="stats-container">
+            <div class="stat-box">Клік: <span id="per-click">1</span></div>
+            <div class="stat-box">Енергія: <span id="energy-text">100/100</span></div>
         </div>
+    </div>
 
-        <div class="balance-section">
-            <span id="balance">0</span> ⭐
+    <div class="coin-btn" id="click-btn">💰</div>
+
+    <div class="energy-container">
+        <div class="energy-bar">
+            <div id="energy-fill"></div>
         </div>
+    </div>
 
-        <button class="main-button" id="action-btn">Заробити (Дивитись рекламу)</button>
-        
-        <p class="hint">Всі виплати проводяться автоматично на ваш гаманець TON</p>
+    <div class="shop">
+        <div class="shop-item">
+            <div><strong>Мультиплікатор x2</strong><br>
+                <small>Ціна: 100 монет</small>
+            </div>
+            <button id="buy-x2">Купити</button>
+        </div>
     </div>
 
     <script>
-        // Ініціалізація Telegram WebApp
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
 
-        // Отримуємо дані користувача
-        const user = tg.initDataUnsafe?.user;
-        if (user) {
-            document.getElementById('greeting').innerText = Привіт, ${user.first_name}!;
+        // Стан гри
+        let coins = 0;
+        let energy = 100;
+        const maxEnergy = 100;
+        let multiplier = 1;
+
+        const balanceEl = document.getElementById('balance');
+        const energyText = document.getElementById('energy-text');
+        const energyFill = document.getElementById('energy-fill');
+        const perClickEl = document.getElementById('per-click');
+        const clickBtn = document.getElementById('click-btn');
+        const buyX2Btn = document.getElementById('buy-x2');
+
+        // Функція кліку
+        clickBtn.addEventListener('click', () => {
+            if (energy > 0) {
+                coins += (1 * multiplier);
+                energy -= 1;
+                updateUI();
+                tg.HapticFeedback.impactOccurred('medium');
+            } else {
+                tg.showAlert("Енергія закінчилась! Почекайте відновлення.");
+            }
+        });
+
+        // Купівля x2
+        buyX2Btn.addEventListener('click', () => {
+            if (coins >= 100) {
+                coins -= 100;
+                multiplier *= 2;
+                buyX2Btn.innerText = "Куплено";
+                buyX2Btn.classList.add('disabled');
+                updateUI();
+                tg.showAlert("Вітаємо! Тепер ви отримуєте вдвічі більше монет!");
+            } else {
+                tg.showAlert("Недостатньо монет!");
+            }
+        });
+
+        // Оновлення інтерфейсу
+        function updateUI() {
+            balanceEl.innerText = Math.floor(coins);
+            energyText.innerText = ${energy}/${maxEnergy};
+            energyFill.style.width = ${(energy / maxEnergy) * 100}%;
+            perClickEl.innerText = 1 * multiplier;
+
+            // Відключаємо кнопку магазину якщо мало грошей
+            if (coins < 100 && buyX2Btn.innerText !== "Куплено") {
+                buyX2Btn.style.opacity = "0.5";
+            } else {
+                buyX2Btn.style.opacity = "1";
+            }
         }
 
-        // Логіка кнопки
-        const btn = document.getElementById('action-btn');
-        let balance = 0;
-
-        btn.addEventListener('click', () => {
-            // Тут буде виклик Adsgram або іншої реклами
-            tg.showConfirm("Бажаєте подивитися рекламу, щоб отримати 5 ⭐?", (confirmed) => {
-                if (confirmed) {
-                    // Симуляція перегляду
-                    balance += 5;
-                    document.getElementById('balance').innerText = balance;
-                    tg.showAlert("Ви отримали 5 зірок!");
-                    
-                    // Вібровідгук (Haptic Feedback) - дуже крута фішка TMA
-                    tg.HapticFeedback.notificationOccurred('success');
-                }
-            });
-        });
-
-        // Налаштування головної кнопки Telegram (внизу екрана)
-        tg.MainButton.setText("ВИВЕСТИ КОШТИ");
-        tg.MainButton.hide(); // Покажемо її, коли баланс буде > 50
-
-        // Слідкуємо за балансом
+        // Відновлення енергії (1 одиниця кожні 2 секунди)
         setInterval(() => {
-            if (balance >= 50) {
-                tg.MainButton.show();
+            if (energy < maxEnergy) {
+                energy += 1;
+                updateUI();
             }
-        }, 1000);
+        }, 2000);
 
-        tg.MainButton.onClick(() => {
-            tg.showAlert("Функція виводу буде доступна після підключення гаманця!");
-        });
+        updateUI();
     </script>
 </body>
 </html>
