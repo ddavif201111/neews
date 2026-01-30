@@ -1,4 +1,57 @@
-#progress-fill { height: 10px; background: orange; width: 100%; transition: width 0.1s; }
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Elite Clicker Fixed</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <style>
+        :root {
+            --tg-bg: #1a1a1a;
+            --tg-text: #ffffff;
+            --tg-button: #0088cc;
+            --tg-sec-bg: #2c2c2c;
+            --tg-accent: #ffdf00;
+        }
+        body {
+            font-family: sans-serif; background: var(--tg-bg); color: var(--tg-text);
+            margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; 
+            overflow: hidden; touch-action: none; user-select: none;
+        }
+        #ton-connect { position: absolute; top: 10px; right: 10px; z-index: 100; transform: scale(0.7); }
+        
+        .header { width: 100%; padding: 15px 0; text-align: center; background: var(--tg-sec-bg); border-radius: 0 0 20px 20px; }
+        #balance { font-size: 38px; font-weight: 900; color: var(--tg-accent); margin: 0; }
+        
+        .lvl-container { width: 60%; margin: 5px auto; background: rgba(255,255,255,0.1); height: 6px; border-radius: 3px; overflow: hidden; }
+        #lvl-progress { height: 100%; width: 0%; background: #4cd137; transition: width 0.3s; }
+        #lvl-text { font-size: 10px; text-transform: uppercase; margin-top: 3px; opacity: 0.8; }
+
+        .page { display: none; flex-direction: column; align-items: center; width: 100%; height: calc(100vh - 140px); overflow-y: auto; }
+        .page.active { display: flex; }
+
+        .click-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; position: relative; touch-action: none; }
+        #coin {
+            width: 200px; height: 200px; background: radial-gradient(circle, #ffdf00 0%, #d4af37 100%);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 80px;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.4); transition: transform 0.05s; z-index: 50;
+            touch-action: none; cursor: pointer;
+        }
+        #coin:active { transform: scale(0.92); }
+
+        .floating-text { position: absolute; color: var(--tg-accent); font-size: 28px; font-weight: bold; pointer-events: none; animation: floatUp 0.6s forwards; z-index: 100; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
+
+        .quest-card, .shop-card { background: var(--tg-sec-bg); width: 85%; padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+        .buy-btn, .claim-btn { background: var(--tg-button); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; }
+
+        .nav-bar { height: 70px; background: var(--tg-sec-bg); display: flex; justify-content: space-around; align-items: center; }
+        .nav-item { color: #888; text-align: center; font-size: 10px; cursor: pointer; flex: 1; }
+        .nav-item.active { color: var(--tg-button); }
+        
+        #energy-bar { background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden; width: 100%; }
+        #progress-fill { height: 100%; background: orange; width: 100%; transition: width 0.1s; }
     </style>
 </head>
 <body>
@@ -15,28 +68,17 @@
         <div class="click-area" id="area"><div id="coin">💰</div></div>
         <div style="width: 85%; margin-bottom: 20px;">
             <div style="display:flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px;">
-                <span>⚡ Енергія: <span id="en-val">1000</span></span>
-                <span>Клік: <span id="pow-val">1</span></span>
+                <span>⚡ <span id="en-val">1000</span></span><span>Клік: <span id="pow-val">1</span></span>
             </div>
-            <div style="background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden;">
-                <div id="progress-fill"></div>
-            </div>
+            <div id="energy-bar"><div id="progress-fill"></div></div>
         </div>
     </div>
 
     <div id="tasks-page" class="page">
         <h2 style="margin-top: 20px;">Завдання</h2>
         <div class="quest-card">
-            <div class="quest-info"><b>Підписка на канал</b><p>+5,000 монет</p></div>
-            <button class="claim-btn" onclick="completeQuest('sub', 5000)">Виконати</button>
-        </div>
-        <div class="quest-card">
-            <div class="quest-info"><b>Підключити гаманець</b><p>+10,000 монет</p></div>
-            <button class="claim-btn" id="q-wallet" onclick="completeQuest('wallet', 10000)">Отримати</button>
-        </div>
-        <div class="quest-card">
-            <div class="quest-info"><b>Зробити 100 кліків</b><p>+2,000 монет</p></div>
-            <button class="claim-btn" id="q-clicks" onclick="completeQuest('clicks', 2000)">Отримати</button>
+            <div><b>Підписка</b><p>+5,000 💰</p></div>
+            <button class="claim-btn" onclick="completeQuest('sub', 5000)">GO</button>
         </div>
     </div>
 
@@ -47,7 +89,7 @@
             <button class="buy-btn" id="buy-power">50</button>
         </div>
         <div class="shop-card">
-            <div><b>Ферма (AFK)</b><br><small id="f-info">0/сек</small></div>
+            <div><b>Ферма</b><br><small id="f-info">0/сек</small></div>
             <button class="buy-btn" id="buy-farm">150</button>
         </div>
     </div>
@@ -67,122 +109,35 @@
             buttonRootId: 'ton-connect'
         });
 
-        // Дані
         let coins = Number(localStorage.getItem('c')) || 0;
         let pLvl = Number(localStorage.getItem('pl')) || 1;
         let fLvl = Number(localStorage.getItem('fl')) || 0;
         let xp = Number(localStorage.getItem('xp')) || 0;
         let userLvl = Number(localStorage.getItem('ul')) || 1;
-        let totalClicks = Number(localStorage.getItem('tc')) || 0;
-        let completedQuests = JSON.parse(localStorage.getItem('cq')) || [];
-
-        let maxEn = 1000;
-        let energy = Number(localStorage.getItem('e')) ?? maxEn;
-
-        const levelNames = ["Новачок", "Бронза", "Срібло", "Золото", "Платина", "Алмаз", "Еліта"];
-        const emojis = ["💰", "🥉", "🥈", "🥇", "💎", "🔮", "👑"];
+        let energy = 1000;
 
         function updateUI() {
             let power = Math.round(Math.pow(1.5, pLvl - 1));
             let passive = fLvl === 0 ? 0 : Math.round(2 * Math.pow(1.5, fLvl - 1));
             let xpToNext = Math.floor(100 * Math.pow(1.2, userLvl - 1));
 
-            // Перевірка рівня
-            if (xp >= xpToNext) {
-                xp = 0; userLvl++;
-                tg.<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Elite Clicker Levels & Quests</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
-    <style>
-        :root {
-            --tg-bg: var(--tg-theme-bg-color, #1a1a1a);
-            --tg-text: var(--tg-theme-text-color, #ffffff);
-            --tg-button: var(--tg-theme-button-color, #0088cc);
-            --tg-sec-bg: var(--tg-theme-secondary-bg-color, #2c2c2c);
-            --tg-accent: #ffdf00;
-        }
-        body {
-            font-family: 'Segoe UI', sans-serif; background: var(--tg-bg); color: var(--tg-text);
-            margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; 
-            overflow: hidden; touch-action: none; user-select: none;
-        }
-        #ton-connect { position: absolute; top: 10px; right: 10px; z-index: 100; transform: scale(0.7); }
-        
-        .header { width: 100%; padding: 15px 0; text-align: center; background: var(--tg-sec-bg); border-radius: 0 0 20px 20px; }
-        #balance { font-size: 38px; font-weight: 900; color: var(--tg-accent); margin: 0; }
-        
-        /* Смужка рівня */
-        .lvl-container { width: 60%; margin: 5px auto; background: rgba(255,255,255,0.1); height: 6px; border-radius: 3px; overflow: hidden; }
-        #lvl-progress { height: 100%; width: 0%; background: #4cd137; transition: width 0.3s; }
-        #lvl-text { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; opacity: 0.8; }
-
-        .page { display: none; flex-direction: column; align-items: center; width: 100%; height: calc(100vh - 140px); overflow-y: auto; }
-        .page.active { display: flex; }
-
-        /* Гра */
-        .click-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; position: relative; }
-        #coin {
-            width: 200px; height: 200px; background: radial-gradient(circle, #ffdf00 0%, #d4af37 100%);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 80px;
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.4); transition: transform 0.05s; z-index: 50;
-        }
-        #coin:active { transform: scale(0.92); }
-        .floating-text { position: absolute; color: var(--tg-accent); font-size: 28px; font-weight: bold; pointer-events: none; animation: floatUp 0.6s forwards; z-index: 100; }
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
-
-        /* Завдання */
-        .quest-card { background: var(--tg-sec-bg); width: 85%; padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
-        .quest-info b { font-size: 14px; }
-        .quest-info p { margin: 2px 0; font-size: 12px; color: #aaa; }
-        .claim-btn { background: #4cd137; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; }
-        .claim-btn:disabled { background: #555; opacity: 0.5; }
-
-        /* Магазин */
-        .shop-card { background: var(--tg-sec-bg); width: 85%; padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
-        .buy-btn { background: var(--tg-button); color: white; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; }
-
-        /* Навігація */
-        .nav-bar { height: 70px; background: var(--tg-sec-bg); display: flex; justify-content: space-around; align-items: center; }
-        .nav-item { color: #888; text-align: center; font-size: 10px; cursor: pointer; flex: 1; }
-        .nav-item.active { color: var(--tg-button); font-weight: bold; }
-        .nav-item span { font-size: 20px; display: block; }showAlert(`Вітаємо! Ви досягли рівня ${userLvl}: ${levelNames[userLvl-1] || "Легенда"}`);
-            }
+            if (xp >= xpToNext) { xp = 0; userLvl++; }
 
             document.getElementById('balance').innerText = Math.floor(coins).toLocaleString();
             document.getElementById('pow-val').innerText = power;
             document.getElementById('en-val').innerText = Math.floor(energy);
-            document.getElementById('progress-fill').style.width = (energy / maxEn * 100) + '%';
-            
-            // UI Рівнів
-            document.getElementById('lvl-text').innerText = Рівень ${userLvl}: ${levelNames[userLvl-1] || "Легенда"};
+            document.getElementById('progress-fill').style.width = (energy / 10) + '%';
             document.getElementById('lvl-progress').style.width = (xp / xpToNext * 100) + '%';
-            document.getElementById('coin').innerText = emojis[userLvl-1] || "👑";
-
-            // Магазин ціни
+            document.getElementById('lvl-text').innerText = Рівень ${userLvl};
+            
             document.getElementById('buy-power').innerText = Math.floor(50 * Math.pow(2, pLvl - 1));
             document.getElementById('buy-farm').innerText = Math.floor(150 * Math.pow(2.2, fLvl));
-            
-            // Квести (блокування кнопок)
-            if (completedQuests.includes('sub')) disableQuestBtn(0);
-            if (completedQuests.includes('wallet')) disableQuestBtn(1);
-            if (completedQuests.includes('clicks')) disableQuestBtn(2);
-            
-            // Умова для квесту кліків
-            document.getElementById('q-clicks').disabled = totalClicks < 100 || completedQuests.includes('clicks');
 
             localStorage.setItem('c', coins);
             localStorage.setItem('pl', pLvl);
             localStorage.setItem('fl', fLvl);
             localStorage.setItem('xp', xp);
             localStorage.setItem('ul', userLvl);
-            localStorage.setItem('tc', totalClicks);
-            localStorage.setItem('e', energy);
-            localStorage.setItem('cq', JSON.stringify(completedQuests));
         }
 
         function showPage(pId, el) {
@@ -192,15 +147,14 @@
             el.classList.add('active');
         }
 
-        // КЛІК
+        // КЛІК ЧЕРЕЗ ONTOUCHSTART (НАЙСТАБІЛЬНІШИЙ)
         document.getElementById('coin').ontouchstart = (e) => {
             e.preventDefault();
             let p = Math.round(Math.pow(1.5, pLvl - 1));
             if (energy >= 1) {
                 coins += p;
                 energy -= 1;
-                xp += 1; // Додаємо досвід
-                totalClicks += 1;
+                xp += 1;
                 
                 const t = document.createElement('div');
                 t.className = 'floating-text'; t.innerText = '+' + p;
@@ -214,35 +168,11 @@
             }
         };
 
-        // Логіка квестів
-        function completeQuest(id, reward) {
-            if (id === 'sub') {
-                window.open('https://t.me/telegram', '_blank'); // Заміни на свій канал
-            }
-            if (id === 'wallet' && !tonConnectUI.connected) {
-                tg.showAlert("Спочатку підключіть гаманець!");
-                return;
-            }
-            
-            if (!completedQuests.includes(id)) {
-                coins += reward;
-                completedQuests.push(id);
-                tg.showAlert(`Виконано! Ви отримали ${reward} 💰`);
-                updateUI();
-            }
-        }
-
-        function disableQuestBtn(index) {
-            const btn = document.querySelectorAll('.claim-btn')[index];
-            btn.innerText = "Виконано ✅";
-            btn.disabled = true;
-            btn.style.background = "#555";
-        }
-
-        // Магазин покупки
         document.getElementById('buy-power').onclick = () => {
-            let pr = Math.floor(50 * Math.pow(2, pLvl - 1));if (coins >= pr) { coins -= pr; pLvl++; updateUI(); }
+            let pr = Math.floor(50 * Math.pow(2, pLvl - 1));
+            if (coins >= pr) { coins -= pr; pLvl++; updateUI(); }
         };
+
         document.getElementById('buy-farm').onclick = () => {
             let pr = Math.floor(150 * Math.pow(2.2, fLvl));
             if (coins >= pr) { coins -= pr; fLvl++; updateUI(); }
@@ -251,7 +181,7 @@
         setInterval(() => {
             let passive = fLvl === 0 ? 0 : Math.round(2 * Math.pow(1.5, fLvl - 1));
             if (passive > 0) coins += (passive / 10);
-            if (energy < maxEn) energy = Math.min(maxEn, energy + 1);
+            if (energy < 1000) energy = Math.min(1000, energy + 1);
             updateUI();
         }, 100);
 
