@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Elite Clicker Pro</title>
+    <title>Elite Clicker Final</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -11,46 +11,34 @@
             --tg-text: var(--tg-theme-text-color, #ffffff);
             --tg-button: var(--tg-theme-button-color, #0088cc);
             --tg-sec-bg: var(--tg-theme-secondary-bg-color, #2c2c2c);
-            --tg-hint: var(--tg-theme-hint-color, #aaaaaa);
         }
-
         body {
-            font-family: 'Segoe UI', sans-serif; background-color: var(--tg-bg); color: var(--tg-text);
+            font-family: sans-serif; background-color: var(--tg-bg); color: var(--tg-text);
             margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden;
             user-select: none; touch-action: manipulation;
         }
-
-        .header { width: 100%; padding: 15px 0; text-align: center; background: var(--tg-sec-bg); border-radius: 0 0 20px 20px; }
+        .header { width: 100%; padding: 15px 0; text-align: center; background: var(--tg-sec-bg); border-radius: 0 0 20px 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         #balance { font-size: 42px; font-weight: 900; color: #ffdf00; margin: 0; }
-        .income-info { font-size: 12px; color: #4cd137; margin-top: 5px; }
-
-        .page { display: none; flex-direction: column; align-items: center; width: 100%; height: calc(100vh - 140px); overflow-y: auto; }
+        .page { display: none; flex-direction: column; align-items: center; width: 100%; height: calc(100vh - 140px); }
         .page.active { display: flex; }
-
         .click-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; position: relative; }
         #coin {
-            width: 220px; height: 220px; background: radial-gradient(circle, #ffdf00 0%, #d4af37 100%);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 90px;
-            box-shadow: 0 0 40px rgba(212, 175, 55, 0.3); transition: transform 0.05s; z-index: 5;
+            width: 200px; height: 200px; background: radial-gradient(circle, #ffdf00 0%, #d4af37 100%);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 80px;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.3); transition: transform 0.05s; z-index: 5;
         }
         #coin:active { transform: scale(0.92); }
-
-        .floating-text { position: absolute; color: #ffdf00; font-size: 30px; font-weight: bold; pointer-events: none; animation: floatUp 0.7s forwards; }
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
-
-        .energy-section { width: 85%; margin-bottom: 20px; }
-        .progress-container { width: 100%; height: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; overflow: hidden; }
-        #progress-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #ffdf00, #ff8c00); transition: width 0.2s; }
-
-        .shop-list { width: 90%; margin-top: 20px; }
-        .shop-card { background: var(--tg-sec-bg); padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .shop-info h3 { margin: 0; font-size: 16px; }
-        .shop-info p { margin: 5px 0 0; font-size: 12px; color: var(--tg-hint); }
-        .buy-btn { background: var(--tg-button); color: white; border: none; padding: 10px 12px; border-radius: 10px; font-weight: bold; min-width: 80px; }
+        .floating-text { position: absolute; color: #ffdf00; font-size: 28px; font-weight: bold; pointer-events: none; animation: floatUp 0.6s forwards; z-index: 10; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-100px); } }
+        .footer-ui { width: 85%; margin-bottom: 10px; }
+        .progress-bg { width: 100%; height: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; overflow: hidden; }
+        #progress-fill { height: 100%; width: 100%; background: orange; transition: width 0.2s; }
+        .shop-list { width: 90%; padding-top: 20px; }
+        .shop-card { background: var(--tg-sec-bg); padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .buy-btn { background: var(--tg-button); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; min-width: 70px; }
         .buy-btn:disabled { opacity: 0.4; }
-
-        .nav-bar { height: 70px; background: var(--tg-sec-bg); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); }
-        .nav-item { color: var(--tg-hint); display: flex; flex-direction: column; align-items: center; font-size: 12px; cursor: pointer; }
+        .nav-bar { height: 70px; background: var(--tg-sec-bg); display: flex; justify-content: space-around; align-items: center; }
+        .nav-item { color: #888; display: flex; flex-direction: column; align-items: center; font-size: 12px; }
         .nav-item.active { color: var(--tg-button); }
     </style>
 </head>
@@ -58,34 +46,34 @@
 
     <div class="header">
         <p id="balance">0</p>
-        <div class="income-info">Пасивний дохід: +<span id="passive-val">0</span>/сек</div>
+        <div style="font-size: 11px; color: #4cd137;">Пасивний дохід: +<span id="passive-val">0</span>/сек</div>
     </div>
 
     <div id="game-page" class="page active">
         <div class="click-area" id="area">
             <div id="coin">💰</div>
         </div>
-        <div class="energy-section">
-            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px;">
-                <span>⚡ Енергія <span id="en-val">1000</span></span>
-                <span>Клік: <span id="power-val">1</span></span></div>
-            <div class="progress-container"><div id="progress-fill"></div></div>
+        <div class="footer-ui">
+            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+                <span>⚡ Енергія: <span id="en-val">1000</span></span>
+                <span>Клік: <span id="pow-val">1</span></span>
+            </div>
+            <div class="progress-bg"><div id="progress-fill"></div></div>
         </div>
     </div>
 
     <div id="shop-page" class="page">
         <div class="shop-list">
             <div class="shop-card">
-                <div class="shop-info"><h3>Мульти-клік (x1.5)</h3><p id="p-lvl">Рівень: 1</p></div>
-                <button class="buy-btn" id="buy-power">50 💰</button>
+                <div><b>Мульти-клік x1.5</b><br><small id="p-info">Рівень 1</small></div><button class="buy-btn" id="buy-power">50</button>
             </div>
             <div class="shop-card">
-                <div class="shop-info"><h3>Фонова ферма</h3><p id="f-lvl">Дохід: 0/сек</p></div>
-                <button class="buy-btn" id="buy-farm">150 💰</button>
+                <div><b>Ферма (Пасив)</b><br><small id="f-info">0/сек</small></div>
+                <button class="buy-btn" id="buy-farm">150</button>
             </div>
             <div class="shop-card">
-                <div class="shop-info"><h3>Ліміт енергії</h3><p id="e-lvl">Макс: 1000</p></div>
-                <button class="buy-btn" id="buy-energy">100 💰</button>
+                <div><b>Макс Енергія</b><br><small id="e-info">1000</small></div>
+                <button class="buy-btn" id="buy-energy">100</button>
             </div>
         </div>
     </div>
@@ -99,54 +87,41 @@
         const tg = window.Telegram.WebApp;
         tg.ready(); tg.expand();
 
-        let coins = Number(localStorage.getItem('c')) || 0;
-        let powerLevel = Number(localStorage.getItem('pl')) || 1;
-        let farmLevel = Number(localStorage.getItem('fl')) || 0;
-        let energyLevel = Number(localStorage.getItem('el')) || 0;
+        // Скидання при критичних помилках
+        function getSafe(key, def) {
+            let val = localStorage.getItem(key);
+            return (val === null || val === "NaN") ? def : Number(val);
+        }
+
+        let coins = getSafe('c', 0);
+        let powerLevel = getSafe('pl', 1);
+        let farmLevel = getSafe('fl', 0);
+        let energyLevel = getSafe('el', 0);
         
         let power = Math.round(Math.pow(1.5, powerLevel - 1));
-        let passiveIncome = farmLevel * 2; // Кожен рівень ферми +2 монети/сек
-        let maxEnergy = 1000 + (energyLevel * 500);
-        
-        let energy = Number(localStorage.getItem('e'));
-        if (energy === null) energy = maxEnergy;
-
-        // Офлайн розрахунок
-        let lastTime = Number(localStorage.getItem('t')) || Date.now();
-        let secondsAway = Math.floor((Date.now() - lastTime) / 1000);
-        
-        if (secondsAway > 5) {
-            let earned = secondsAway * passiveIncome;
-            if (earned > 0) {
-                coins += earned;
-                tg.showAlert(`Ви були відсутні ${Math.floor(secondsAway/60)} хв. Ферма назбирала: ${earned} 💰`);
-            }
-            energy = Math.min(maxEnergy, energy + (secondsAway * 3));
-        }
+        let passive = farmLevel * 2;
+        let maxEn = 1000 + (energyLevel * 500);
+        let energy = getSafe('e', maxEn);
 
         function updateUI() {
             power = Math.round(Math.pow(1.5, powerLevel - 1));
-            passiveIncome = farmLevel * 2;
-            maxEnergy = 1000 + (energyLevel * 500);
+            passive = farmLevel * 2;
+            maxEn = 1000 + (energyLevel * 500);
 
             document.getElementById('balance').innerText = Math.floor(coins).toLocaleString();
-            document.getElementById('passive-val').innerText = passiveIncome;
-            document.getElementById('en-val').innerText = energy;
-            document.getElementById('progress-fill').style.width = (energy/maxEnergy*100) + '%';
-            document.getElementById('power-val').innerText = power;
-
-            document.getElementById('p-lvl').innerText = Рівень: ${powerLevel} (Клік: ${power});
-            document.getElementById('f-lvl').innerText = Дохід: ${passiveIncome}/сек;
-            document.getElementById('e-lvl').innerText = Макс: ${maxEnergy};
+            document.getElementById('passive-val').innerText = passive;
+            document.getElementById('en-val').innerText = Math.floor(energy);
+            document.getElementById('pow-val').innerText = power;
+            document.getElementById('progress-fill').style.width = (energy/maxEn*100) + '%';
 
             let pPrice = Math.floor(50 * Math.pow(2, powerLevel - 1));
             let fPrice = Math.floor(150 * Math.pow(1.9, farmLevel));
             let ePrice = Math.floor(100 * Math.pow(2.2, energyLevel));
 
-            document.getElementById('buy-power').innerText = pPrice + ' 💰';
-            document.getElementById('buy-farm').innerText = fPrice + ' 💰';
-            document.getElementById('buy-energy').innerText = ePrice + ' 💰';
-
+            document.getElementById('buy-power').innerText = pPrice;
+            document.getElementById('buy-farm').innerText = fPrice;
+            document.getElementById('buy-energy').innerText = ePrice;
+            
             document.getElementById('buy-power').disabled = coins < pPrice;
             document.getElementById('buy-farm').disabled = coins < fPrice;
             document.getElementById('buy-energy').disabled = coins < ePrice;
@@ -154,8 +129,8 @@
             localStorage.setItem('c', coins);
             localStorage.setItem('pl', powerLevel);
             localStorage.setItem('fl', farmLevel);
-            localStorage.setItem('el', energyLevel);localStorage.setItem('e', energy);
-            localStorage.setItem('t', Date.now());
+            localStorage.setItem('el', energyLevel);
+            localStorage.setItem('e', energy);
         }
 
         function showPage(pId, el) {
@@ -165,19 +140,24 @@
             el.classList.add('active');
         }
 
-        document.getElementById('coin').addEventListener('touchstart', (e) => {
+        // КЛІК ЧЕРЕЗ ONTOUCHSTART
+        document.getElementById('coin').ontouchstart = (e) => {
             e.preventDefault();
-            if (energy > 0) {
-                coins += power; energy--;
+            if (energy >= 1) {
+                coins += power;
+                energy -= 1;
+                
                 const t = document.createElement('div');
                 t.className = 'floating-text'; t.innerText = '+' + power;
-                t.style.left = e.touches[0].clientX + 'px'; t.style.top = e.touches[0].clientY + 'px';
+                t.style.left = e.touches[0].clientX + 'px';
+                t.style.top = e.touches[0].clientY + 'px';
                 document.getElementById('area').appendChild(t);
-                setTimeout(() => t.remove(), 700);
+                setTimeout(() => t.remove(), 600);
+                
                 tg.HapticFeedback.impactOccurred('medium');
                 updateUI();
             }
-        });
+        };
 
         document.getElementById('buy-power').onclick = () => {
             let pr = Math.floor(50 * Math.pow(2, powerLevel - 1));
@@ -191,18 +171,15 @@
 
         document.getElementById('buy-energy').onclick = () => {
             let pr = Math.floor(100 * Math.pow(2.2, energyLevel));
-            if (coins >= pr) { coins -= pr; energyLevel++; energy = maxEnergy; updateUI(); }
+            if (coins >= pr) { coins -= pr; energyLevel++; energy = maxEn; updateUI(); }
         };
 
-        // Пасивний дохід щосекунди
+        // Пасив та Енергія
         setInterval(() => {
-            if (passiveIncome > 0) { coins += passiveIncome / 10; updateUI(); }
+            if (passive > 0) coins += (passive / 10);
+            if (energy < maxEn) energy = Math.min(maxEn, energy + 0.5);
+            updateUI();
         }, 100);
-
-        // Регенерація енергії
-        setInterval(() => {
-            if (energy < maxEnergy) { energy = Math.min(maxEnergy, energy + 5); updateUI(); }
-        }, 1500);
 
         updateUI();
     </script>
