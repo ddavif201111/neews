@@ -3,144 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Elite Clicker Final</title>
+    <title>Elite Clicker Fix</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
-        :root {
-            --tg-bg: #1a1a1a;
-            --tg-text: #ffffff;
-            --tg-button: #0088cc;
-            --tg-sec-bg: #2c2c2c;
-            --tg-accent: #ffdf00;
-        }
         body {
-            font-family: sans-serif; background: var(--tg-bg); color: var(--tg-text);
+            font-family: sans-serif; background: #1a1a1a; color: white;
             margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; 
             overflow: hidden; touch-action: none; user-select: none;
         }
-        #ton-connect { position: absolute; top: 10px; right: 10px; z-index: 100; transform: scale(0.7); }
-        .header { width: 100%; padding: 15px 0; text-align: center; background: var(--tg-sec-bg); border-radius: 0 0 20px 20px; }
-        #balance { font-size: 38px; font-weight: 900; color: var(--tg-accent); margin: 0; }
-        .lvl-container { width: 60%; margin: 5px auto; background: rgba(255,255,255,0.1); height: 6px; border-radius: 3px; overflow: hidden; }
-        #lvl-progress { height: 100%; width: 0%; background: #4cd137; transition: width 0.3s; }
-        #lvl-text { font-size: 10px; text-transform: uppercase; margin-top: 3px; opacity: 0.8; }
-        .page { display: none; flex-direction: column; align-items: center; width: 100%; height: calc(100vh - 140px); overflow-y: auto; }
+        #ton-connect { position: absolute; top: 10px; right: 10px; z-index: 100; transform: scale(0.8); }
+        .header { width: 100%; padding: 20px 0; text-align: center; background: #2c2c2c; border-radius: 0 0 20px 20px; }
+        #balance { font-size: 40px; font-weight: 900; color: #ffdf00; margin: 0; }
+        
+        .page { display: none; flex-direction: column; align-items: center; width: 100%; height: calc(100vh - 140px); }
         .page.active { display: flex; }
-        .click-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; position: relative; touch-action: none; }
+
+        /* КЛІКЕР */
+        .click-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; position: relative; }
         #coin {
             width: 200px; height: 200px; background: radial-gradient(circle, #ffdf00 0%, #d4af37 100%);
             border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 80px;
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.4); transition: transform 0.05s; z-index: 50;
-            touch-action: none; cursor: pointer;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.5); transition: transform 0.05s;
+            cursor: pointer; z-index: 50; touch-action: none;
         }
-        #coin:active { transform: scale(0.92); }
-        .floating-text { position: absolute; color: var(--tg-accent); font-size: 28px; font-weight: bold; pointer-events: none; animation: floatUp 0.6s forwards; z-index: 100; }
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
-        .quest-card, .shop-card { background: var(--tg-sec-bg); width: 85%; padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
-        .buy-btn, .claim-btn { background: var(--tg-button); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; }
-        .nav-bar { height: 70px; background: var(--tg-sec-bg); display: flex; justify-content: space-around; align-items: center; }
-        .nav-item { color: #888; text-align: center; font-size: 10px; cursor: pointer; flex: 1; }
-        .nav-item.active { color: var(--tg-button); }
-        #energy-bar { background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden; width: 100%; }
-        #progress-fill { height: 100%; background: orange; width: 100%; transition: width 0.1s; }
+        #coin:active { transform: scale(0.95); }
+
+        .floating-text { position: absolute; color: #ffdf00; font-size: 30px; font-weight: bold; pointer-events: none; animation: float 0.6s forwards; z-index: 100; }
+        @keyframes float { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-100px); } }
+
+        .nav-bar { height: 70px; background: #2c2c2c; display: flex; justify-content: space-around; align-items: center; }
+        .nav-item { color: #888; text-align: center; font-size: 12px; cursor: pointer; flex: 1; }
+        .nav-item.active { color: #0088cc; font-weight: bold; }
     </style>
 </head>
 <body>
+
     <div id="ton-connect"></div>
+
     <div class="header">
-        <div id="lvl-text">Рівень 1</div>
-        <div class="lvl-container"><div id="lvl-progress"></div></div>
         <p id="balance">0</p>
+        <div id="lvl-status" style="font-size: 12px; color: #4cd137;">Рівень 1</div>
     </div>
+
     <div id="game-page" class="page active">
-        <div class="click-area" id="area"><div id="coin">💰</div></div>
-        <div style="width: 85%; margin-bottom: 20px;">
-            <div style="display:flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px;">
-                <span>⚡ <span id="en-val">1000</span></span>
-                <span>Клік: <span id="pow-val">1</span></span></div>
-            <div id="energy-bar"><div id="progress-fill"></div></div>
+        <div class="click-area">
+            <div id="coin" ontouchstart="doClick(event)">💰</div>
+        </div>
+        <div style="width: 80%; margin-bottom: 20px; text-align: center;">
+            <div style="font-size: 14px; margin-bottom: 5px;">⚡ Енергія: <span id="en-val">1000</span></div>
+            <div style="background: #444; height: 10px; border-radius: 5px; overflow: hidden;">
+                <div id="en-bar" style="background: orange; width: 100%; height: 100%;"></div>
+            </div>
         </div>
     </div>
-    <div id="tasks-page" class="page">
-        <h2 style="margin-top: 20px;">Завдання</h2>
-        <div class="quest-card"><div><b>Підписка</b><p>+5,000 💰</p></div><button class="claim-btn">GO</button></div>
-    </div>
-    <div id="shop-page" class="page">
-        <h2 style="margin-top: 20px;">Магазин</h2>
-        <div class="shop-card"><div><b>Мульти-клік</b></div><button class="buy-btn" id="buy-power">50</button></div>
-        <div class="shop-card"><div><b>Ферма</b></div><button class="buy-btn" id="buy-farm">150</button></div>
-    </div>
+
+    <div id="shop-page" class="page"><h2 style="margin-top:50px;">Магазин скоро...</h2></div>
+    <div id="tasks-page" class="page"><h2 style="margin-top:50px;">Завдання скоро...</h2></div>
+
     <div class="nav-bar">
-        <div class="nav-item active" onclick="showPage('game-page', this)"><span>🎮</span>Гра</div>
-        <div class="nav-item" onclick="showPage('tasks-page', this)"><span>📝</span>Завдання</div>
-        <div class="nav-item" onclick="showPage('shop-page', this)"><span>🛒</span>Магазин</div>
+        <div class="nav-item active" onclick="switchPage('game-page', this)"><span>🎮</span><br>Гра</div>
+        <div class="nav-item" onclick="switchPage('tasks-page', this)"><span>📝</span><br>Завдання</div>
+        <div class="nav-item" onclick="switchPage('shop-page', this)"><span>🛒</span><br>Магазин</div>
     </div>
+
     <script>
         const tg = window.Telegram.WebApp;
-        tg.ready(); tg.expand();
+        tg.ready();
+        tg.expand();
+
+        // TON Connect
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
             manifestUrl: 'https://raw.githubusercontent.com/ton-connect/demo-dapp/main/public/tonconnect-manifest.json',
             buttonRootId: 'ton-connect'
         });
-        let coins = Number(localStorage.getItem('c')) || 0;
-        let pLvl = Number(localStorage.getItem('pl')) || 1;
-        let fLvl = Number(localStorage.getItem('fl')) || 0;
-        let xp = Number(localStorage.getItem('xp')) || 0;
-        let userLvl = Number(localStorage.getItem('ul')) || 1;
-        let energy = 1000;
+
+        // Логіка
+        let coins = Number(localStorage.getItem('c')) || 0;let energy = 1000;
 
         function updateUI() {
-            let power = Math.round(Math.pow(1.5, pLvl - 1));
-            let xpToNext = Math.floor(100 * Math.pow(1.2, userLvl - 1));
-            if (xp >= xpToNext) { xp = 0; userLvl++; }
             document.getElementById('balance').innerText = Math.floor(coins).toLocaleString();
-            document.getElementById('pow-val').innerText = power;
             document.getElementById('en-val').innerText = Math.floor(energy);
-            document.getElementById('progress-fill').style.width = (energy / 10) + '%';
-            document.getElementById('lvl-progress').style.width = (xp / xpToNext * 100) + '%';
-            document.getElementById('lvl-text').innerText = Рівень ${userLvl};
+            document.getElementById('en-bar').style.width = (energy / 10) + '%';
             localStorage.setItem('c', coins);
-            localStorage.setItem('pl', pLvl);
-            localStorage.setItem('fl', fLvl);
-            localStorage.setItem('xp', xp);
-            localStorage.setItem('ul', userLvl);
         }
 
-        function showPage(pId, el) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(pId).classList.add('active');
-            el.classList.add('active');
-        }
-
-        document.getElementById('coin').ontouchstart = (e) => {
-            e.preventDefault();
-            let p = Math.round(Math.pow(1.5, pLvl - 1));
+        // ОСНОВНА ФУНКЦІЯ КЛІКУ
+        function doClick(event) {
+            event.preventDefault();
             if (energy >= 1) {
-                coins += p; energy -= 1; xp += 1;
-                const t = document.createElement('div');
-                t.className = 'floating-text'; t.innerText = '+' + p;
-                t.style.left = e.touches[0].clientX + 'px';
-                t.style.top = e.touches[0].clientY + 'px';
-                document.getElementById('area').appendChild(t);
-                setTimeout(() => t.remove(), 600);
+                coins += 1;
+                energy -= 1;
+
+                // Анімація цифри
+                const touch = event.touches[0];
+                const text = document.createElement('div');
+                text.className = 'floating-text';
+                text.innerText = '+1';
+                text.style.left = touch.clientX + 'px';
+                text.style.top = touch.clientY + 'px';
+                document.body.appendChild(text);
+                setTimeout(() => text.remove(), 600);
+
                 tg.HapticFeedback.impactOccurred('medium');
                 updateUI();
             }
-        };
+        }
 
-        document.getElementById('buy-power').onclick = () => {
-            let pr = Math.floor(50 * Math.pow(2, pLvl - 1));
-            if (coins >= pr) { coins -= pr; pLvl++; updateUI(); }
-        };
+        function switchPage(id, el) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            el.classList.add('active');
+        }
 
+        // Регенерація енергії
         setInterval(() => {
-            let passive = fLvl === 0 ? 0 : Math.round(2 * Math.pow(1.5, fLvl - 1));
-            if (passive > 0) coins += (passive / 10);
-            if (energy < 1000) energy = Math.min(1000, energy + 1);
-            updateUI();
-        }, 100);
+            if (energy < 1000) {
+                energy += 1;
+                updateUI();
+            }
+        }, 1000);
 
         updateUI();
     </script>
