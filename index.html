@@ -10,39 +10,47 @@
             font-family: sans-serif; overflow: hidden; touch-action: none;
             display: flex; flex-direction: column; height: 100vh;
         }
-        .header { text-align: center; padding: 20px; background: #2c2c2c; border-radius: 0 0 20px 20px; }
-        #balance { font-size: 42px; font-weight: bold; color: #ffdf00; margin: 0; }
+        .header { text-align: center; padding: 15px; background: #2c2c2c; border-radius: 0 0 20px 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        #balance { font-size: 36px; font-weight: bold; color: #ffdf00; margin: 0; }
         
-        .page { display: none; flex-grow: 1; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
-        .active { display: flex; }
+        .page { display: none; flex-grow: 1; flex-direction: column; align-items: center; width: 100%; padding-top: 20px; overflow-y: auto; }
+        .active-page { display: flex; }
 
         #coin {
-            width: 220px; height: 220px; background: radial-gradient(circle, #ffdf00, #d4af37); 
+            width: 210px; height: 210px; background: radial-gradient(circle, #ffdf00, #d4af37); 
             border-radius: 50%; display: flex; align-items: center; justify-content: center; 
-            font-size: 80px; box-shadow: 0 0 30px rgba(255,223,0,0.4); user-select: none;
+            font-size: 80px; box-shadow: 0 0 30px rgba(255,223,0,0.3); user-select: none;
+            transition: transform 0.05s;
         }
         #coin:active { transform: scale(0.95); }
 
-        .card { background: #2c2c2c; width: 85%; padding: 15px; border-radius: 12px; margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
-        .btn { background: #0088cc; color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; }
+        .card { background: #2c2c2c; width: 88%; padding: 15px; border-radius: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #3d3d3d; }
+        .btn { background: #0088cc; color: white; border: none; padding: 10px 16px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .btn:disabled { opacity: 0.3; cursor: default; }
 
-        .nav { height: 70px; display: flex; background: #2c2c2c; justify-content: space-around; align-items: center; border-top: 1px solid #444; }
-        .nav-item { opacity: 0.5; font-size: 12px; text-align: center; flex: 1; }
-        .nav-item.active { opacity: 1; color: #0088cc; }
+        .nav { height: 75px; display: flex; background: #2c2c2c; justify-content: space-around; align-items: center; border-top: 1px solid #3d3d3d; padding-bottom: 10px; }
+        .nav-item { opacity: 0.5; font-size: 11px; text-align: center; flex: 1; transition: 0.2s; }
+        .nav-item.active { opacity: 1; color: #0088cc; transform: translateY(-3px); }
+        .nav-item span { font-size: 22px; display: block; margin-bottom: 4px; }
+
+        .ref-box { background: #111; padding: 10px; border-radius: 8px; width: 100%; margin-top: 10px; font-size: 11px; color: #888; overflow-wrap: break-word; }
     </style>
 </head>
 <body>
 
 <div class="header">
     <p id="balance">0</p>
-    <div style="color: #4cd137; font-size: 14px;">+<span id="ps-val">0</span>/сек</div>
+    <div style="font-size: 12px; color: #4cd137; margin-top: 4px;">Прибуток: +<span id="ps-val">0</span>/сек</div>
 </div>
 
-<div id="game-pg" class="page active">
+<div id="game-pg" class="page active-page">
     <div id="coin" onpointerdown="tap(event)">💰</div>
-    <div style="width: 80%; margin-top: 30px;">
-        <div style="font-size: 12px; margin-bottom: 5px;">⚡ Енергія: <span id="energy">1000</span></div>
-        <div style="background: #444; height: 8px; border-radius: 4px; overflow: hidden;">
+    <div style="width: 85%; margin-top: 40px;">
+        <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
+            <span>⚡ Енергія: <span id="energy">1000</span> / 1000</span>
+            <span>Клік: <span id="pwr-val">1</span></span>
+        </div>
+        <div style="background: #333; height: 10px; border-radius: 5px; overflow: hidden; border: 1px solid #444;">
             <div id="en-bar" style="background: orange; width: 100%; height: 100%;"></div>
         </div>
     </div>
@@ -51,17 +59,39 @@
 <div id="shop-pg" class="page">
     <div class="card">
         <div><b>Мульти-клік</b><br><small>Рівень <span id="p-lvl">1</span></small></div>
-        <button class="btn" onclick="buy('p')">Купити</button>
+        <button class="btn" id="buy-p" onclick="buy('p')">0</button>
     </div>
     <div class="card">
-        <div><b>Ферма</b><br><small>Авто-дохід</small></div>
-        <button class="btn" onclick="buy('f')">Купити</button>
+        <div><b>Ферма (AFK)</b><br><small>Дохід: <span id="f-ps">0</span>/с</small></div>
+        <button class="btn" id="buy-f" onclick="buy('f')">0</button>
+    </div>
+</div>
+
+<div id="ref-pg" class="page">
+    <h3 style="margin: 0 0 10px 0;">Запроси друзів</h3>
+    <p style="font-size: 13px; color: #aaa; text-align: center; width: 80%;">Отримуй 5,000 монет за кожного друга!</p>
+    <div class="card" style="flex-direction: column; align-items: flex-start;">
+        <span style="font-size: 14px;">Твоє посилання:</span>
+        <div class="ref-box" id="ref-link">https://t.me/your_bot?start=user123</div><button class="btn" style="width: 100%; margin-top: 10px;" onclick="copyRef()">Копіювати</button>
+    </div>
+</div>
+
+<div id="task-pg" class="page">
+    <div class="card">
+        <div><b>Бонус новачка</b><br><small>+1,000 монет</small></div>
+        <button class="btn" id="q-start" onclick="claimStart()">Отримати</button>
+    </div>
+    <div class="card">
+        <div><b>Щоденна нагорода</b><br><small>+5,000 монет</small></div>
+        <button class="btn" id="daily-btn" onclick="dailyClaim()">Отримати</button>
     </div>
 </div>
 
 <div class="nav">
-    <div class="nav-item active" onclick="nav('game-pg', this)">🎮<br>Гра</div>
-    <div class="nav-item" onclick="nav('shop-pg', this)">🛒<br>Магазин</div>
+    <div class="nav-item active" onclick="nav('game-pg', this)"><span>🎮</span>Гра</div>
+    <div class="nav-item" onclick="nav('shop-pg', this)"><span>🛒</span>Магазин</div>
+    <div class="nav-item" onclick="nav('ref-pg', this)"><span>👥</span>Друзі</div>
+    <div class="nav-item" onclick="nav('task-pg', this)"><span>📝</span>Завдання</div>
 </div>
 
 <script>
@@ -71,7 +101,14 @@
     let coins = parseInt(localStorage.getItem('coins')) || 0;
     let pLvl = parseInt(localStorage.getItem('pLvl')) || 1;
     let fLvl = parseInt(localStorage.getItem('fLvl')) || 0;
+    let lastDaily = localStorage.getItem('lastDaily') || "";
+    let startClaimed = localStorage.getItem('startClaimed') || "false";
     let energy = 1000;
+
+    // Рефералка
+    const userId = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : "123";
+    const botLink = "https://t.me/ТВІЙ_БОТ?start=" + userId;
+    document.getElementById('ref-link').innerText = botLink;
 
     function update() {
         let pwr = Math.round(Math.pow(1.5, pLvl - 1));
@@ -80,8 +117,30 @@
         document.getElementById('balance').innerText = Math.floor(coins).toLocaleString();
         document.getElementById('energy').innerText = Math.floor(energy);
         document.getElementById('en-bar').style.width = (energy / 10) + '%';
+        document.getElementById('pwr-val').innerText = pwr;
         document.getElementById('ps-val').innerText = ps;
+        
+        let pPrice = Math.floor(50 * Math.pow(2, pLvl - 1));
+        let fPrice = Math.floor(150 * Math.pow(2.2, fLvl));
+        
+        document.getElementById('buy-p').innerText = pPrice;
+        document.getElementById('buy-f').innerText = fPrice;
         document.getElementById('p-lvl').innerText = pLvl;
+        document.getElementById('f-ps').innerText = ps;
+        
+        document.getElementById('buy-p').disabled = coins < pPrice;
+        document.getElementById('buy-f').disabled = coins < fPrice;
+
+        // Перевірка завдань
+        if(startClaimed === "true") {
+            document.getElementById('q-start').innerText = "✅";
+            document.getElementById('q-start').disabled = true;
+        }
+        const today = new Date().toDateString();
+        if(lastDaily === today) {
+            document.getElementById('daily-btn').innerText = "✅";
+            document.getElementById('daily-btn').disabled = true;
+        }
 
         localStorage.setItem('coins', coins);
         localStorage.setItem('pLvl', pLvl);
@@ -90,29 +149,50 @@
 
     function tap(e) {
         if (e.cancelable) e.preventDefault();
-        let pwr = Math.round(Math.pow(1.5, pLvl - 1));if (energy >= 1) {
-            coins += pwr;
-            energy -= 1;
+        let pwr = Math.round(Math.pow(1.5, pLvl - 1));
+        if (energy >= 1) {
+            coins += pwr; energy -= 1;
             tg.HapticFeedback.impactOccurred('light');
             update();
         }
     }
 
     function buy(type) {
-        let price = type === 'p' ? Math.floor(50 * Math.pow(2, pLvl - 1)) : Math.floor(150 * Math.pow(2.2, fLvl));
-        if (coins >= price) {
-            coins -= price;
-            if (type === 'p') pLvl++; else fLvl++;
-            update();
+        if (type === 'p') {
+            let pr = Math.floor(50 * Math.pow(2, pLvl - 1));
+            if (coins >= pr) { coins -= pr; pLvl++; }
         } else {
-            tg.showAlert("Недостатньо монет!");
+            let pr = Math.floor(150 * Math.pow(2.2, fLvl));
+            if (coins >= pr) { coins -= pr; fLvl++; }
         }
+        update();
+    }
+
+    function claimStart() {
+        coins += 1000;
+        startClaimed = "true";
+        localStorage.setItem('startClaimed', "true");
+        update();
+        tg.showAlert("Отримано бонус новачка!");
+    }
+
+    function dailyClaim() {
+        const today = new Date().toDateString();
+        coins += 5000;lastDaily = today;
+        localStorage.setItem('lastDaily', today);
+        update();
+        tg.showAlert("Щоденна нагорода отримана!");
+    }
+
+    function copyRef() {
+        navigator.clipboard.writeText(botLink);
+        tg.showAlert("Посилання скопійовано!");
     }
 
     function nav(id, el) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
+        document.getElementById(id).classList.add('active-page');
         el.classList.add('active');
     }
 
