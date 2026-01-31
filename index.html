@@ -6,35 +6,46 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body { background: #1a1a1a; color: white; margin: 0; font-family: sans-serif; overflow: hidden; touch-action: none; display: flex; flex-direction: column; height: 100vh; }
-        .header { text-align: center; padding: 15px; background: #2c2c2c; border-radius: 0 0 20px 20px; }
+        .header { text-align: center; padding: 15px; background: #2c2c2c; border-radius: 0 0 20px 20px; z-index: 10; }
         #balance { font-size: 34px; font-weight: bold; color: #ffdf00; margin: 0; }
-        .lvl-bar { width: 80%; background: #444; height: 6px; border-radius: 3px; margin: 5px auto; overflow: hidden; }
-        #lvl-fill { height: 100%; width: 0%; background: #4cd137; transition: width 0.3s; }
+        
+        .lvl-bar { width: 80%; background: #444; height: 8px; border-radius: 4px; margin: 8px auto; overflow: hidden; position: relative; }
+        #lvl-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #4cd137, #b8ff9e); transition: width 0.3s; }
+        
         .page { display: none; flex-grow: 1; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
         .active { display: flex; }
-        #coin { width: 200px; height: 200px; background: radial-gradient(circle, #ffdf00, #d4af37); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 70px; box-shadow: 0 0 20px rgba(255,223,0,0.3); user-select: none; }
+
+        .coin-wrap { position: relative; display: flex; align-items: center; justify-content: center; width: 220px; height: 220px; }
+        #coin { width: 100%; height: 100%; background: radial-gradient(circle, #ffdf00, #d4af37); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 80px; box-shadow: 0 0 30px rgba(255,223,0,0.3); user-select: none; z-index: 5; }
         #coin:active { transform: scale(0.96); }
-        .card { background: #2c2c2c; width: 85%; padding: 12px; border-radius: 12px; margin: 8px 0; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333; }
-        .btn { background: #0088cc; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; }
-        .btn:disabled { opacity: 0.3; }
-        .nav { height: 70px; display: flex; background: #2c2c2c; justify-content: space-around; align-items: center; }
-        .nav-item { opacity: 0.5; font-size: 11px; text-align: center; flex: 1; }
+
+        .card { background: #2c2c2c; width: 85%; padding: 15px; border-radius: 15px; margin: 10px 0; display: flex; justify-content: space-between; align-items: center; border: 1px solid #3d3d3d; }
+        .btn { background: #0088cc; color: white; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; }
+        
+        .nav { height: 75px; display: flex; background: #2c2c2c; justify-content: space-around; align-items: center; border-top: 1px solid #3d3d3d; padding-bottom: 10px; }
+        .nav-item { opacity: 0.4; font-size: 11px; text-align: center; flex: 1; color: white; text-decoration: none; }
         .nav-item.active { opacity: 1; color: #0088cc; }
+        .nav-item span { font-size: 20px; display: block; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <div style="font-size: 10px; color: #aaa;" id="lvl-txt">Рівень 1</div>
+    <div style="font-size: 12px; color: #aaa; margin-bottom: 4px;" id="lvl-txt">Рівень 1</div>
     <div class="lvl-bar"><div id="lvl-fill"></div></div>
     <p id="balance">0</p>
 </div>
 
 <div id="game-pg" class="page active">
-    <div id="coin" onpointerdown="tap(event)">💰</div>
-    <div style="width: 80%; margin-top: 30px;">
-        <small>Енергія: <span id="energy">1000</span></small>
-        <div style="background: #333; height: 8px; border-radius: 4px; overflow: hidden;"><div id="en-bar" style="background: orange; width: 100%; height: 100%;"></div></div>
+    <div class="coin-wrap">
+        <div id="coin" onpointerdown="tap(event)">💰</div>
+    </div>
+    <div style="width: 80%; margin-top: 40px;">
+        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px;">
+            <span>⚡ Енергія: <span id="energy">1000</span></span>
+            <span>Клік: <span id="pwr-val">1</span></span>
+        </div>
+        <div style="background: #333; height: 10px; border-radius: 5px; overflow: hidden;"><div id="en-bar" style="background: orange; width: 100%; height: 100%;"></div></div>
     </div>
 </div>
 
@@ -44,38 +55,57 @@
 </div>
 
 <div id="task-pg" class="page">
-    <div class="card"><div><b>Бонус новачка</b><br><small>+1,000 монет</small></div><button class="btn" id="q-start" onclick="claim()">GET</button></div>
+    <div class="card"><div><b>Бонус новачка</b><br><small>+1,000 монет</small></div><button class="btn" id="q-start" onclick="claim()">Отримати</button></div>
 </div>
 
 <div class="nav">
-    <div class="nav-item active" onclick="nav('game-pg', this)">🎮<br>Гра</div>
-    <div class="nav-item" onclick="nav('shop-pg', this)">🛒<br>Магазин</div>
-    <div class="nav-item" onclick="nav('task-pg', this)">📝<br>Завдання</div>
+    <div class="nav-item active" onclick="nav('game-pg', this)"><span>🎮</span>Гра</div>
+    <div class="nav-item" onclick="nav('shop-pg', this)"><span>🛒</span>Магазин</div>
+    <div class="nav-item" onclick="nav('task-pg', this)"><span>📝</span>Завдання</div>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
-    tg.ready(); tg.expand();
-
-    let coins = parseInt(localStorage.getItem('c')) || 0;
+    tg.ready(); tg.expand();let coins = parseInt(localStorage.getItem('c')) || 0;
     let pLvl = parseInt(localStorage.getItem('pl')) || 1;
     let fLvl = parseInt(localStorage.getItem('fl')) || 0;
     let xp = parseInt(localStorage.getItem('xp')) || 0;
     let energy = 1000;
 
-    const emojis = ["💰", "🥉", "🥈", "🥇", "💎", "👑"];
+    const emojis = ["💰", "🥉", "🥈", "🥇", "💎", "👑", "🔥"];
+    const lvlNames = ["Новачок", "Бронза", "Срібло", "Золото", "Платина", "Діамант", "Легенда"];
+
+    function getLevelData(currentXp) {
+        if (currentXp < 1000) return { lvl: 1, min: 0, max: 1000 };
+        if (currentXp < 3000) return { lvl: 2, min: 1000, max: 3000 };
+        if (currentXp < 6000) return { lvl: 3, min: 3000, max: 6000 };
+        if (currentXp < 8000) return { lvl: 4, min: 6000, max: 8000 };
+        // Для рівнів 5+ крок по 5000
+        let base = 8000;
+        let step = 5000;
+        let extraLvls = Math.floor((currentXp - base) / step) + 1;
+        return { 
+            lvl: 4 + extraLvls, 
+            min: base + (extraLvls - 1) * step, 
+            max: base + extraLvls * step 
+        };
+    }
 
     function update() {
         let pwr = Math.round(Math.pow(1.5, pLvl - 1));
         let ps = fLvl === 0 ? 0 : Math.round(2 * Math.pow(1.5, fLvl - 1));
-        let userLvl = Math.floor(xp / 100) + 1;
-        let progress = xp % 100;
+        
+        let lvlData = getLevelData(xp);
+        let progress = ((xp - lvlData.min) / (lvlData.max - lvlData.min)) * 100;
 
-        document.getElementById('balance').innerText = Math.floor(coins).toLocaleString();document.getElementById('energy').innerText = Math.floor(energy);
+        document.getElementById('balance').innerText = Math.floor(coins).toLocaleString();
+        document.getElementById('energy').innerText = Math.floor(energy);
         document.getElementById('en-bar').style.width = (energy / 10) + '%';
+        document.getElementById('pwr-val').innerText = pwr;
+        
         document.getElementById('lvl-fill').style.width = progress + '%';
-        document.getElementById('lvl-txt').innerText = "Рівень " + userLvl;
-        document.getElementById('coin').innerText = emojis[userLvl - 1] || "👑";
+        document.getElementById('lvl-txt').innerText = Рівень ${lvlData.lvl}: ${lvlNames[lvlData.lvl-1] || "Майстер"};
+        document.getElementById('coin').innerText = emojis[lvlData.lvl-1] || "🔥";
         
         document.getElementById('p-price').innerText = Math.floor(50 * Math.pow(2, pLvl - 1));
         document.getElementById('f-price').innerText = Math.floor(150 * Math.pow(2.2, fLvl));
@@ -90,7 +120,9 @@
         if (e.cancelable) e.preventDefault();
         let pwr = Math.round(Math.pow(1.5, pLvl - 1));
         if (energy >= 1) {
-            coins += pwr; energy--; xp++;
+            coins += pwr;
+            energy--;
+            xp += 1; // Кожен клік = 1 XP
             tg.HapticFeedback.impactOccurred('light');
             update();
         }
@@ -105,8 +137,8 @@
     }
 
     function claim() {
-        if (localStorage.getItem('claimed') !== 'y') {
-            coins += 1000; localStorage.setItem('claimed', 'y');
+        if (localStorage.getItem('cl') !== 'y') {
+            coins += 1000; localStorage.setItem('cl', 'y');
             document.getElementById('q-start').innerText = "✅"; update();
         }
     }
