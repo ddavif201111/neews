@@ -1,166 +1,86 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Elite Clicker Final Fix</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
         body {
-            font-family: sans-serif; background: #1a1a1a; color: white;
-            margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; 
-            overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none;
+            background: #1a1a1a; color: white; margin: 0; padding: 0;
+            font-family: sans-serif; overflow: hidden; touch-action: none;
+            display: flex; flex-direction: column; height: 100vh;
         }
-        #ton-connect { position: absolute; top: 10px; right: 10px; z-index: 100; transform: scale(0.7); }
-        .header { width: 100%; padding: 15px 0; text-align: center; background: #2c2c2c; border-radius: 0 0 20px 20px; }
-        #balance { font-size: 38px; font-weight: 900; color: #ffdf00; margin: 0; }
+        .header { text-align: center; padding: 20px; background: #2c2c2c; }
+        #balance { font-size: 40px; font-weight: bold; color: #ffdf00; margin: 0; }
         
-        .page { display: none; flex-direction: column; align-items: center; width: 100%; height: calc(100vh - 140px); overflow-y: auto; }
-        .page.active { display: flex; }
-
-        .click-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; position: relative; }
+        .game { flex-grow: 1; display: flex; align-items: center; justify-content: center; }
         #coin {
-            width: 200px; height: 200px; background: radial-gradient(circle, #ffdf00 0%, #d4af37 100%);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 80px;
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.4); transition: transform 0.05s;
-            z-index: 999; touch-action: none; cursor: pointer;
+            width: 200px; height: 200px; background: orange; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 80px;
+            box-shadow: 0 0 20px rgba(255,165,0,0.5); user-select: none;
         }
-        #coin:active { transform: scale(0.92); }
+        #coin:active { transform: scale(0.95); }
 
-        .floating-text { position: absolute; color: #ffdf00; font-size: 32px; font-weight: bold; pointer-events: none; animation: floatUp 0.6s forwards; z-index: 1000; }
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
-
-        .item-card { background: #2c2c2c; width: 85%; padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
-        .btn { background: #0088cc; color: white; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; }
-
-        .nav-bar { height: 70px; background: #2c2c2c; display: flex; justify-content: space-around; align-items: center; }
-        .nav-item { color: #888; text-align: center; font-size: 11px; flex: 1; padding: 10px; }
-        .nav-item.active { color: #0088cc; font-weight: bold; }
+        .nav { height: 60px; display: flex; background: #2c2c2c; justify-content: space-around; align-items: center; }
+        .nav div { opacity: 0.6; font-size: 12px; }
+        .nav .active { opacity: 1; color: #0088cc; }
     </style>
 </head>
 <body>
 
-    <div id="ton-connect"></div>
+<div class="header">
+    <p id="balance">0</p>
+    <small>Енергія: <span id="energy">1000</span></small>
+</div>
 
-    <div class="header">
-        <p id="balance">0</p>
-        <div id="lvl-info" style="font-size: 12px; color: #4cd137;">Рівень 1</div>
-    </div>
+<div class="game">
+    <div id="coin" onpointerdown="tap(event)">💰</div>
+</div>
 
-    <div id="game-page" class="page active">
-        <div class="click-area">
-            <div id="coin">💰</div>
-        </div>
-        <div style="width: 85%; margin-bottom: 20px;">
-            <div style="font-size: 14px; margin-bottom: 5px; text-align: center;">⚡ Енергія: <span id="en-val">1000</span></div>
-            <div style="background: #444; height: 10px; border-radius: 5px; overflow: hidden;">
-                <div id="en-bar" style="height: 100%; background: orange; width: 100%;"></div>
-            </div>
-        </div>
-    </div>
+<div class="nav">
+    <div class="active">🎮 Гра</div>
+    <div onclick="alert('Скоро!')">🛒 Магазин</div>
+    <div onclick="alert('Скоро!')">📝 Завдання</div>
+</div>
 
-    <div id="tasks-page" class="page">
-        <h2 style="margin-top:20px">Завдання</h2>
-        <div class="item-card">
-            <div><b>Бонус за старт</b><p style="font-size:12px;margin:0">+1,000 💰</p></div>
-            <button class="btn" onclick="claimQuest(this, 1000)">Отримати</button>
-        </div>
-    </div>
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
 
-    <div id="shop-page" class="page">
-        <h2 style="margin-top:20px">Магазин</h2>
-        <div class="item-card">
-            <div><b>Мульти-клік</b><br><small id="p-info">Рівень 1</small></div>
-            <button class="btn" onclick="buyPower()">Купити</button>
-        </div>
-    </div>
+    let coins = parseInt(localStorage.getItem('coins')) || 0;
+    let energy = 1000;
 
-    <div class="nav-bar"><div class="nav-item active" onclick="showP('game-page', this)"><span>🎮</span><br>Гра</div>
-        <div class="nav-item" onclick="showP('tasks-page', this)"><span>📝</span><br>Завдання</div>
-        <div class="nav-item" onclick="showP('shop-page', this)"><span>🛒</span><br>Магазин</div>
-    </div>
+    function update() {
+        document.getElementById('balance').innerText = coins.toLocaleString();
+        document.getElementById('energy').innerText = energy;
+        localStorage.setItem('coins', coins);
+    }
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.ready(); tg.expand();
-
-        let coins = Number(localStorage.getItem('c')) || 0;
-        let pLvl = Number(localStorage.getItem('pl')) || 1;
-        let energy = 1000;
-
-        function updateUI() {
-            document.getElementById('balance').innerText = Math.floor(coins).toLocaleString();
-            document.getElementById('en-val').innerText = Math.floor(energy);
-            document.getElementById('en-bar').style.width = (energy / 10) + '%';
-            document.getElementById('p-info').innerText = Рівень ${pLvl};
-            localStorage.setItem('c', coins);
-            localStorage.setItem('pl', pLvl);
-        }
-
-        // --- ТОЙ САМИЙ ФІКС КЛІКУ ---
-        const coinBtn = document.getElementById('coin');
-
-        function handleTap(e) {
-            e.preventDefault(); // Блокуємо скрол і зум
-            let power = Math.round(Math.pow(1.5, pLvl - 1));
+    function tap(e) {
+        // Важливо для Telegram: запобігаємо стандартним діям
+        if (e.cancelable) e.preventDefault();
+        
+        if (energy > 0) {
+            coins += 1;
+            energy -= 1;
             
-            if (energy >= 1) {
-                coins += power;
-                energy -= 1;
-
-                // Створення тексту
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                
-                const t = document.createElement('div');
-                t.className = 'floating-text';
-                t.innerText = +${power};
-                t.style.left = ${clientX}px;
-                t.style.top = ${clientY}px;
-                document.body.appendChild(t);
-                setTimeout(() => t.remove(), 600);
-
-                tg.HapticFeedback.impactOccurred('medium');
-                updateUI();
-            }
+            // Вібрація
+            tg.HapticFeedback.impactOccurred('medium');
+            update();
         }
+    }
 
-        // Вішаємо на всі можливі події
-        coinBtn.addEventListener('touchstart', handleTap, { passive: false });
-        coinBtn.addEventListener('mousedown', (e) => { if (!('ontouchstart' in window)) handleTap(e); });
-
-        function buyPower() {
-            let price = Math.floor(50 * Math.pow(2, pLvl - 1));
-            if (coins >= price) {
-                coins -= price;
-                pLvl++;
-                updateUI();
-                tg.showAlert("Рівень кліку підвищено!");
-            } else {
-                tg.showAlert("Недостатньо монет!");
-            }
+    // Регенерація енергії
+    setInterval(() => {
+        if (energy < 1000) {
+            energy++;
+            update();
         }
+    }, 1500);
 
-        function claimQuest(btn, amt) {
-            coins += amt;
-            btn.innerText = "✅";
-            btn.disabled = true;
-            updateUI();
-        }
+    update();
+</script>
 
-        function showP(id, el) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            el.classList.add('active');
-        }
-
-        setInterval(() => {
-            if (energy < 1000) { energy = Math.min(1000, energy + 1); updateUI(); }
-        }, 1000);
-
-        updateUI();
-    </script>
 </body>
 </html>
