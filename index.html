@@ -2,119 +2,153 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Прибираємо все зайве, що може блокувати дотики */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
         body { 
-            background: #111; color: white; margin: 0; font-family: sans-serif; 
-            text-align: center; display: flex; flex-direction: column; height: 100vh;
+            background: #0f0f0f; color: white; margin: 0; font-family: -apple-system, sans-serif; 
+            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
         }
-        .header { padding: 10px; background: #222; }
-        #balance { font-size: 40px; color: gold; margin: 10px 0; }
+        .header { padding: 15px; background: #1a1a1a; border-radius: 0 0 20px 20px; text-align: center; border-bottom: 1px solid #333; }
+        #balance { font-size: 36px; font-weight: 800; color: #ffdf00; margin: 5px 0; }
         
-        /* Сторінки */
-        .page { display: none; flex: 1; padding: 20px; }
-        .active { display: block !important; }
+        .lvl-bar-bg { width: 60%; background: #333; height: 6px; border-radius: 10px; margin: 5px auto; overflow: hidden; }
+        #lvl-fill { height: 100%; width: 0%; background: #00c6ff; transition: width 0.3s; }
+        
+        .page { display: none; flex: 1; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
+        .active { display: flex !important; }
 
-        /* Панда - тепер це велика кнопка */
-        #coin-btn {
-            width: 200px; height: 200px; border-radius: 50%;
-            background: #333; border: 5px solid gold; font-size: 80px;
-            margin: 40px auto; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; -webkit-user-select: none;
+        /* Стильна монета-панда */
+        #coin { 
+            width: 220px; height: 220px; background: radial-gradient(circle, #333, #000); 
+            border: 6px solid #ffdf00; border-radius: 50%; display: flex; align-items: center; 
+            justify-content: center; font-size: 90px; box-shadow: 0 0 30px rgba(255,223,0,0.2); 
+            cursor: pointer; transition: transform 0.05s;
         }
-        #coin-btn:active { transform: scale(0.95); }
+        #coin:active { transform: scale(0.95); }
 
-        /* Компактне меню */
+        /* Навігація в стилі Web3 */
         .nav { 
-            display: flex; background: #222; padding: 10px 0; 
-            justify-content: center; gap: 30px; border-top: 1px solid #444;
+            height: 80px; display: flex; background: #1a1a1a; 
+            justify-content: center; align-items: center; gap: 20px; 
+            border-top: 1px solid #333; padding-bottom: 15px;
         }
-        .nav-item { color: #888; font-size: 12px; cursor: pointer; }
-        .nav-item.active { color: #0088cc; font-weight: bold; }
-        .nav-item span { font-size: 24px; display: block; }
+        .nav-item { opacity: 0.4; font-size: 11px; text-align: center; width: 70px; cursor: pointer; }
+        .nav-item.active { opacity: 1; color: #0088cc; }
+        .nav-item span { font-size: 24px; display: block; margin-bottom: 2px; }
 
-        .shop-item { background: #222; margin: 10px; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; }
-        button { background: #0088cc; color: white; border: none; padding: 10px; border-radius: 5px; }
+        .card { background: #1e1e1e; width: 90%; padding: 15px; border-radius: 15px; margin: 8px 0; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333; }
+        .btn { background: #0088cc; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; }
+        
+        #lvl-up-msg { position: fixed; top: 20%; width: 100%; text-align: center; font-size: 40px; display: none; z-index: 100; text-shadow: 0 0 20px gold; }
     </style>
 </head>
 <body>
 
+<div id="lvl-up-msg">🎉 НОВИЙ РІВЕНЬ!</div>
+
 <div class="header">
-    <div id="lvl-info">Рівень 1</div>
+    <div style="font-size: 11px; color: #888; text-transform: uppercase;" id="lvl-txt">Baby Panda</div>
+    <div class="lvl-bar-bg"><div id="lvl-fill"></div></div>
     <div id="balance">0</div>
 </div>
 
 <div id="pg-game" class="page active">
-    <div id="coin-btn">🐼</div>
-    <p>Енергія: <span id="energy">1000</span></p>
+    <div id="coin">🐼</div>
+    <div style="width: 80%; margin-top: 30px;">
+        <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px;">
+            <span>⚡ Енергія: <span id="energy">1000</span></span>
+            <span>Клік: +<span id="pwr-val">1</span></span>
+        </div>
+        <div class="lvl-bar-bg" style="width: 100%; height: 8px;"><div id="en-bar" style="background: orange; width: 100%; height: 100%;"></div></div>
+    </div>
 </div>
 
 <div id="pg-shop" class="page">
-    <div class="shop-item">
-        <span>Клік (+1) <br> Ціна: <span id="p-price">50</span></span>
-        <button id="buy-p">КУПИТИ</button>
+    <div class="card">
+        <div><b>Multi-Tap</b><br><small>Ціна: <span id="p-price">50</span></small></div>
+        <button class="btn" id="buy-tap">UP</button>
     </div>
 </div>
 
 <div id="pg-task" class="page">
-    <div class="shop-item">
-        <span>Бонус +1000</span>
-        <button id="claim-btn">ВЗЯТИ</button>
+    <div class="card">
+        <div><b>Стартовий бонус</b><br><small>+1,000 монет</small></div>
+        <button class="btn" id="claim-btn">ВЗЯТИ</button>
     </div>
 </div>
 
 <div class="nav">
     <div class="nav-item active" id="n-game"><span>🚀</span>Проєкт</div>
-    <div class="nav-item" id="n-shop"><span>🛒</span>Магазин</div>
-    <div class="nav-item" id="n-task"><span>📝</span>Завдання</div>
+    <div class="nav-item" id="n-shop"><span>🛒</span>Магазин</div><div class="nav-item" id="n-task"><span>📝</span>Завдання</div>
 </div>
 
 <script>
-    // Ініціалізація даних
+    const tg = window.Telegram.WebApp;
+    tg.ready(); tg.expand();
+
     let coins = Number(localStorage.getItem('c')) || 0;
     let xp = Number(localStorage.getItem('xp')) || 0;
     let pLvl = Number(localStorage.getItem('pl')) || 1;
     let energy = 1000;
+    let lastLvl = 1;
 
-    const coinBtn = document.getElementById('coin-btn');
-    const balanceEl = document.getElementById('balance');
-    const energyEl = document.getElementById('energy');
+    const characters = ["🐼", "🐨", "🐻", "🐯", "🦁", "🐉"];
 
-    function updateUI() {
-        balanceEl.innerText = Math.floor(coins);
-        energyEl.innerText = energy;
-        document.getElementById('p-price').innerText = Math.floor(50 * Math.pow(2, pLvl - 1));
-        
-        // Система рівнів за твоїм запитом
+    function update() {
+        // Визначення рівня за твоїми цифрами
         let lvl = 1;
-        if(xp >= 1000) lvl = 2;
-        if(xp >= 3000) lvl = 3;
-        if(xp >= 6000) lvl = 4;
-        if(xp >= 8000) lvl = 5;
-        document.getElementById('lvl-info').innerText = "Рівень " + lvl;
+        let minXp = 0;
+        let maxXp = 1000;
+        let name = "Baby Panda";
+
+        if (xp >= 1000 && xp < 3000) { lvl = 2; minXp = 1000; maxXp = 3000; name = "Warrior Panda"; }
+        else if (xp >= 3000 && xp < 6000) { lvl = 3; minXp = 3000; maxXp = 6000; name = "Cyber Panda"; }
+        else if (xp >= 6000 && xp < 8000) { lvl = 4; minXp = 6000; maxXp = 8000; name = "Elite Guardian"; }
+        else if (xp >= 8000) { lvl = 5; minXp = 8000; maxXp = 13000; name = "Techno King"; }
+
+        // Анімація нового рівня
+        if (lvl > lastLvl) {
+            lastLvl = lvl;
+            document.getElementById('lvl-up-msg').style.display = 'block';
+            tg.HapticFeedback.notificationOccurred('success');
+            setTimeout(() => { document.getElementById('lvl-up-msg').style.display = 'none'; }, 2500);
+        }
+
+        // Рендер тексту
+        document.getElementById('balance').innerText = Math.floor(coins).toLocaleString();
+        document.getElementById('energy').innerText = energy;
+        document.getElementById('en-bar').style.width = (energy / 10) + '%';
+        document.getElementById('lvl-txt').innerText = name;
+        document.getElementById('lvl-fill').style.width = ((xp - minXp) / (maxXp - minXp) * 100) + '%';
+        document.getElementById('coin').innerText = characters[lvl-1] || "🐉";
+        document.getElementById('pwr-val').innerText = pLvl;
+        document.getElementById('p-price').innerText = Math.floor(50 * Math.pow(2, pLvl - 1));
 
         localStorage.setItem('c', coins);
         localStorage.setItem('xp', xp);
         localStorage.setItem('pl', pLvl);
     }
 
-    // КЛІК ПО ПАНДІ
-    coinBtn.onclick = function() {
+    // КЛІК (використовуємо надійний onclick)
+    document.getElementById('coin').onclick = function() {
         if (energy > 0) {
             coins += pLvl;
             xp += 1;
             energy -= 1;
-            updateUI();
+            tg.HapticFeedback.impactOccurred('medium');
+            update();
         }
     };
 
     // НАВІГАЦІЯ
-    function goTo(pg, navId) {
+    function goTo(pgId, navId) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));document.getElementById(pg).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById(pgId).classList.add('active');
         document.getElementById(navId).classList.add('active');
+        tg.HapticFeedback.impactOccurred('light');
     }
 
     document.getElementById('n-game').onclick = () => goTo('pg-game', 'n-game');
@@ -122,21 +156,21 @@
     document.getElementById('n-task').onclick = () => goTo('pg-task', 'n-task');
 
     // КУПІВЛЯ
-    document.getElementById('buy-p').onclick = function() {
+    document.getElementById('buy-tap').onclick = function() {
         let price = Math.floor(50 * Math.pow(2, pLvl - 1));
         if (coins >= price) {
             coins -= price;
             pLvl += 1;
-            updateUI();
+            update();
         }
     };
 
     // БОНУС
     document.getElementById('claim-btn').onclick = function() {
-        if (localStorage.getItem('clm') !== 'yes') {
+        if (localStorage.getItem('clm_done') !== 'yes') {
             coins += 1000;
-            localStorage.setItem('clm', 'yes');
-            updateUI();
+            localStorage.setItem('clm_done', 'yes');
+            update();
         }
     };
 
@@ -144,11 +178,11 @@
     setInterval(() => {
         if (energy < 1000) {
             energy++;
-            updateUI();
+            update();
         }
-    }, 1000);
+    }, 1500);
 
-    updateUI();
+    update();
 </script>
 </body>
 </html>
