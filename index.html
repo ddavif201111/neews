@@ -5,72 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
         body { 
-            background: #121212; color: white; margin: 0; font-family: 'Segoe UI', Roboto, sans-serif; 
+            background: #121212; color: white; margin: 0; font-family: sans-serif; 
             overflow: hidden; width: 100vw; height: 100vh; display: flex; flex-direction: column;
             touch-action: none; transition: background 1s ease;
         }
-        .header { text-align: center; padding: 20px 15px; background: rgba(44, 44, 44, 0.8); backdrop-filter: blur(10px); border-radius: 0 0 25px 25px; flex-shrink: 0; }
-        #balance { font-size: 38px; font-weight: 900; color: #ffdf00; margin: 0; text-shadow: 0 0 15px rgba(255, 223, 0, 0.3); }
-        
-        .lvl-bar { width: 70%; background: #333; height: 6px; border-radius: 10px; margin: 10px auto; overflow: hidden; }
-        #lvl-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #00c6ff, #0072ff); transition: width 0.3s; }
+        .header { text-align: center; padding: 15px; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); border-radius: 0 0 20px 20px; z-index: 10; }
+        #balance { font-size: 38px; font-weight: 900; color: #ffdf00; margin: 0; }
+        .lvl-bar { width: 70%; background: #333; height: 6px; border-radius: 10px; margin: 8px auto; overflow: hidden; }
+        #lvl-fill { height: 100%; width: 0%; background: #00c6ff; transition: width 0.3s; }
         
         .page { display: none; flex-grow: 1; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
         .active { display: flex; }
 
-        /* Контейнер монети */
+        /* ОНОВЛЕНА ЗОНА КЛІКУ */
         .coin-container { flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; position: relative; }
         #coin { 
-            width: 240px; height: 240px; background: radial-gradient(circle, #333, #000); 
-            border: 8px solid #ffdf00; border-radius: 50%; display: flex; align-items: center; 
-            justify-content: center; font-size: 100px; box-shadow: 0 0 50px rgba(255,223,0,0.2); 
-            user-select: none; transition: transform 0.05s; z-index: 10;
+            width: 240px; height: 240px; background: radial-gradient(circle, #444, #000); 
+            border: 6px solid #ffdf00; border-radius: 50%; display: flex; align-items: center; 
+            justify-content: center; font-size: 100px; box-shadow: 0 0 30px rgba(255,223,0,0.2); 
+            transition: transform 0.05s; z-index: 9999; cursor: pointer;
+            pointer-events: auto !important;
         }
         #coin:active { transform: scale(0.92); }
 
-        /* Ефект святкування */
-        #celebration { position: absolute; font-size: 40px; pointer-events: none; display: none; z-index: 100; text-align: center; width: 100%; }
+        #celebration { position: absolute; top: 20%; font-size: 40px; pointer-events: none; display: none; z-index: 10000; text-align: center; width: 100%; text-shadow: 0 0 20px gold; }
 
-        /* Меню (Зближене) */
-        .nav { 
-            height: 85px; display: flex; background: #1c1c1c; 
-            justify-content: center; align-items: center; gap: 20px; /* Зблизив іконки тут */
-            padding-bottom: 20px; border-top: 1px solid #333;
-        }
-        .nav-item { 
-            opacity: 0.5; font-size: 11px; text-align: center; color: white; 
-            width: 70px; transition: 0.3s;
-        }
-        .nav-item.active { opacity: 1; color: #0088cc; transform: translateY(-5px); }
-        .nav-item span { font-size: 24px; display: block; margin-bottom: 2px; }
+        .nav { height: 80px; display: flex; background: #1c1c1c; justify-content: center; align-items: center; gap: 25px; padding-bottom: 15px; border-top: 1px solid #333; }
+        .nav-item { opacity: 0.5; font-size: 11px; text-align: center; color: white; width: 70px; }
+        .nav-item.active { opacity: 1; color: #0088cc; }
+        .nav-item span { font-size: 22px; display: block; margin-bottom: 2px; }
 
-        .card { background: #242424; width: 90%; padding: 15px; border-radius: 18px; margin: 8px 0; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333; }
-        .btn { background: #0088cc; color: white; border: none; padding: 12px 18px; border-radius: 12px; font-weight: bold; }
+        .card { background: #242424; width: 90%; padding: 15px; border-radius: 18px; margin: 8px 0; display: flex; justify-content: space-between; align-items: center; }
+        .btn { background: #0088cc; color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; }
     </style>
 </head>
 <body id="main-body">
 
-<div id="celebration">🎉 🎈 🥳<br>LEVEL UP!</div>
+<div id="celebration">🎉 LEVEL UP! 🥳</div>
 
 <div class="header">
-    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #888;" id="lvl-txt">Рівень 1</div>
+    <div style="font-size: 11px; color: #888;" id="lvl-txt">Рівень 1</div>
     <div class="lvl-bar"><div id="lvl-fill"></div></div>
     <p id="balance">0</p>
 </div>
 
 <div id="game-pg" class="page active">
     <div class="coin-container">
-        <div id="coin" onpointerdown="tap(event)">🐼</div>
+        <div id="coin" onpointerdown="handleTap(event)">🐼</div>
     </div>
     <div style="width: 80%; padding-bottom: 20px;">
-        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 8px; color: #aaa;">
-            <span>⚡ Енергія: <span id="energy">1000</span></span>
+        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 8px;">
+            <span>⚡ <span id="energy">1000</span></span>
             <span>Клік: +<span id="pwr-val">1</span></span>
         </div>
-        <div style="background: #222; height: 8px; border-radius: 10px; overflow: hidden; border: 1px solid #333;"><div id="en-bar" style="background: linear-gradient(90deg, #ff8c00, #ffdf00); width: 100%; height: 100%;"></div>
-        </div>
+        <div style="background: #222; height: 8px; border-radius: 10px; overflow: hidden;"><div id="en-bar" style="background: orange; width: 100%; height: 100%;"></div></div>
     </div>
 </div>
 
@@ -79,8 +69,7 @@
     <div class="card"><div><b>Auto-Bot</b><br><small id="f-price">150</small></div><button class="btn" onclick="buy('f')">UP</button></div>
 </div>
 
-<div id="task-pg" class="page">
-    <div class="card"><div><b>Daily Welcome</b><br><small>+1,000</small></div><button class="btn" id="q-start" onclick="claim()">GET</button></div>
+<div id="task-pg" class="page"><div class="card"><div><b>Бонус</b><br><small>+1,000</small></div><button class="btn" id="q-start" onclick="claim()">GET</button></div>
 </div>
 
 <div class="nav">
@@ -101,7 +90,6 @@
     let energy = 1000;
     let currentLvl = 1;
 
-    // Еволюція Панди та Фони
     const characters = ["🐼", "🐨", "🐻", "🐯", "🦁", "🐉"];
     const backgrounds = ["#121212", "#1a1a2e", "#16213e", "#1b1b2f", "#0f3460", "#1a1a1a"];
 
@@ -116,12 +104,7 @@
 
     function update() {
         let ld = getLevelData(xp);
-        
-        // Перевірка на підвищення рівня для анімації
-        if (ld.l > currentLvl) {
-            showLevelUp();
-            currentLvl = ld.l;
-        }
+        if (ld.l > currentLvl) { showLevelUp(); currentLvl = ld.l; }
 
         let pwr = Math.round(Math.pow(1.5, pLvl - 1));
         let ps = fLvl === 0 ? 0 : Math.round(2 * Math.pow(1.5, fLvl - 1));
@@ -134,8 +117,6 @@
         document.getElementById('lvl-fill').style.width = prog + '%';
         document.getElementById('lvl-txt').innerText = Рівень ${ld.l}: ${ld.n};
         document.getElementById('coin').innerText = characters[ld.l-1] || "👑";
-        
-        // Зміна фону
         document.getElementById('main-body').style.background = backgrounds[ld.l-1] || "#111";
         
         document.getElementById('p-price').innerText = Math.floor(50 * Math.pow(2, pLvl - 1));
@@ -147,21 +128,26 @@
         localStorage.setItem('xp', xp);
     }
 
+    // ГОЛОВНА ФУНКЦІЯ КЛІКУ
+    function handleTap(e) {
+        e.preventDefault();
+        e.stopPropagation(); // Зупиняємо подію, щоб Telegram її не вкрав
+        
+        let pwr = Math.round(Math.pow(1.5, pLvl - 1));
+        if (energy >= 1) {
+            coins += pwr;
+            energy--;
+            xp++;
+            tg.HapticFeedback.impactOccurred('medium');
+            update();
+        }
+    }
+
     function showLevelUp() {
         const div = document.getElementById('celebration');
         div.style.display = 'block';
         tg.HapticFeedback.notificationOccurred('success');
         setTimeout(() => { div.style.display = 'none'; }, 3000);
-    }
-
-    function tap(e) {
-        if (e.cancelable) e.preventDefault();
-        let pwr = Math.round(Math.pow(1.5, pLvl - 1));
-        if (energy >= 1) {
-            coins += pwr; energy--; xp++;
-            tg.HapticFeedback.impactOccurred('medium');
-            update();
-        }
     }
 
     function buy(type) {
