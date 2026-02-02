@@ -5,49 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: none; }
         body { 
             background: #0f0f0f; color: white; margin: 0; font-family: -apple-system, sans-serif; 
             display: flex; flex-direction: column; height: 100vh; overflow: hidden;
         }
-        .header { padding: 10px; background: #1a1a1a; border-radius: 0 0 20px 20px; text-align: center; border-bottom: 1px solid #333; }
+        .header { padding: 10px; background: #1a1a1a; border-radius: 0 0 20px 20px; text-align: center; border-bottom: 1px solid #333; z-index: 10; }
         #balance { font-size: 32px; font-weight: 800; color: #ffdf00; margin: 5px 0; }
         
         .lvl-bar-bg { width: 60%; background: #333; height: 6px; border-radius: 10px; margin: 5px auto; overflow: hidden; }
         #lvl-fill { height: 100%; width: 0%; background: #00c6ff; transition: width 0.3s; }
         
-        .page { display: none; flex: 1; flex-direction: column; align-items: center; width: 100%; padding: 20px 0; }
+        .page { display: none; flex: 1; flex-direction: column; align-items: center; width: 100%; position: relative; }
         .active { display: flex !important; }
 
+        /* ЗОНА КЛІКУ НА ВЕСЬ ЕКРАН */
+        .click-zone { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            display: flex; align-items: center; justify-content: center; z-index: 5;
+        }
         #coin { 
-            width: 200px; height: 200px; background: radial-gradient(circle, #333, #000); 
+            width: 220px; height: 220px; background: radial-gradient(circle, #333, #000); 
             border: 6px solid #ffdf00; border-radius: 50%; display: flex; align-items: center; 
-            justify-content: center; font-size: 80px; box-shadow: 0 0 30px rgba(255,223,0,0.2); 
-            cursor: pointer; transition: transform 0.05s; margin: auto;
-        }
-
-        /* Стиль реферальної картки як на скріні */
-        .ref-card { 
-            background: #1e1e1e; width: 90%; padding: 20px; border-radius: 20px; 
-            text-align: center; border: 1px solid #333; margin-top: 10px;
-        }
-        .ref-bonus { font-size: 18px; font-weight: bold; color: #ffdf00; margin-bottom: 10px; }
-        .invite-btn { 
-            background: #d4af37; color: black; border: none; width: 100%; 
-            padding: 15px; border-radius: 12px; font-weight: bold; font-size: 16px; margin-top: 15px;
+            justify-content: center; font-size: 90px; box-shadow: 0 0 30px rgba(255,223,0,0.2); 
+            pointer-events: none; transition: transform 0.05s;
         }
 
         .nav { 
             height: 80px; display: flex; background: #1a1a1a; 
-            justify-content: center; align-items: center; gap: 12px; 
-            border-top: 1px solid #333; padding-bottom: 15px;
+            justify-content: center; align-items: center; gap: 15px; 
+            border-top: 1px solid #333; padding-bottom: 20px; z-index: 20;
         }
         .nav-item { opacity: 0.4; font-size: 10px; text-align: center; width: 65px; cursor: pointer; }
         .nav-item.active { opacity: 1; color: #0088cc; }
-        .nav-item span { font-size: 20px; display: block; margin-bottom: 2px; }
+        .nav-item span { font-size: 22px; display: block; }
 
-        .card { background: #1e1e1e; width: 90%; padding: 15px; border-radius: 15px; margin: 8px 0; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333; }
-        .btn { background: #0088cc; color: white; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; }
+        .card { background: #1e1e1e; width: 90%; padding: 15px; border-radius: 15px; margin: 8px 0; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333; z-index: 25; }
+        .btn { background: #0088cc; color: white; border: none; padding: 12px 18px; border-radius: 10px; font-weight: bold; }
+
+        .ref-card { background: #1e1e1e; width: 90%; padding: 25px; border-radius: 20px; text-align: center; border: 1px solid #333; z-index: 25; }
     </style>
 </head>
 <body>
@@ -59,8 +55,10 @@
 </div>
 
 <div id="pg-game" class="page active">
-    <div style="flex:1; display:flex; align-items:center;"><div id="coin">🐼</div></div>
-    <div style="width: 85%; margin-bottom: 20px;">
+    <div class="click-zone" id="main-click-area">
+        <div id="coin">🐼</div>
+    </div>
+    <div style="width: 85%; margin-top: auto; margin-bottom: 20px; z-index: 10;">
         <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px;">
             <span>⚡ <span id="energy">1000</span></span>
             <span>Клік: +<span id="pwr-val">1</span></span>
@@ -70,21 +68,17 @@
 </div>
 
 <div id="pg-shop" class="page">
-    <div class="card"><div><b>Multi-Tap</b><br><small id="p-price">50</small></div><button class="btn" id="buy-tap">UP</button></div>
+    <div class="card"><div><b>Multi-Tap</b><br><small>Ціна: <span id="p-price">50</span></small></div><button class="btn" id="buy-tap">UP</button></div>
 </div>
 
 <div id="pg-task" class="page">
-    <div class="card"><div><b>Бонус</b><br><small>+1,000</small></div><button class="btn" id="claim-btn">GET</button></div>
-</div><div id="pg-ref" class="page">
-    <div class="ref-card">
-        <div style="font-size: 40px;">🎁</div>
-        <div class="ref-bonus">Отримуйте 2,500 панд за кожного друга!</div>
-        <div style="color: #aaa; font-size: 13px;">Запрошуйте друзів та заробляйте разом</div>
-        <button class="invite-btn" onclick="shareRef()">ЗАПРОСИТИ ДРУЗІВ</button>
-    </div>
-    <div class="card" style="margin-top:20px;">
-        <div><b>Зароблено на друзях</b></div>
-        <div style="color: #ffdf00; font-weight: bold;">0 🐼</div>
+    <div class="card"><div><b>Стартовий бонус</b><br><small>+1,000</small></div><button class="btn" id="claim-btn">GET</button></div>
+</div>
+
+<div id="pg-ref" class="page">
+    <div class="ref-card"><div style="font-size: 40px;">🎁</div>
+        <div style="color:#ffdf00; font-weight:bold; margin:10px 0;">+2,500 за друга</div>
+        <button class="btn" style="width:100%; background:#d4af37; color:black;" id="invite-btn">ЗАПРОСИТИ</button>
     </div>
 </div>
 
@@ -98,6 +92,7 @@
 <script>
     const tg = window.Telegram.WebApp;
     tg.ready(); tg.expand();
+    tg.disableVerticalSwipes();
 
     let coins = Number(localStorage.getItem('c')) || 0;
     let xp = Number(localStorage.getItem('xp')) || 0;
@@ -107,47 +102,52 @@
     function update() {
         let lvl = xp < 1000 ? 1 : xp < 3000 ? 2 : xp < 6000 ? 3 : 4;
         const chars = ["🐼", "🐨", "🐻", "🐯"];
-        
         document.getElementById('balance').innerText = Math.floor(coins).toLocaleString();
         document.getElementById('energy').innerText = energy;
         document.getElementById('en-bar').style.width = (energy / 10) + '%';
         document.getElementById('coin').innerText = chars[lvl-1] || "🐯";
         document.getElementById('pwr-val').innerText = pLvl;
         document.getElementById('p-price').innerText = Math.floor(50 * Math.pow(2, pLvl - 1));
-        
         localStorage.setItem('c', coins);
         localStorage.setItem('xp', xp);
         localStorage.setItem('pl', pLvl);
     }
 
-    // Реферальна функція
-    function shareRef() {
-        const userId = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : "new_player";
-        const botLink = https://t.me/Clicker_teken_bot?start=${userId}; // ТУТ НАЗВА ТВОГО БОТА
-        const text = Гей! Приєднуйся до мого проєкту Cyber Panda і отримуй 2,500 коїнів на старт! 🐼🚀;
-        const shareUrl = https://t.me/share/url?url=${encodeURIComponent(botLink)}&text=${encodeURIComponent(text)};
-        tg.openTelegramLink(shareUrl);
+    // ГОЛОВНИЙ ОБРОБНИК КЛІКУ
+    document.getElementById('main-click-area').addEventListener('pointerdown', (e) => {
+        if (energy > 0) {
+            coins += pLvl; xp++; energy--;
+            document.getElementById('coin').style.transform = 'scale(0.95)';
+            tg.HapticFeedback.impactOccurred('medium');
+            update();
+        }
+    });
+
+    document.getElementById('main-click-area').addEventListener('pointerup', () => {
+        document.getElementById('coin').style.transform = 'scale(1)';
+    });
+
+    // Навігація через ID
+    function navTo(p, n) {
+        document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(nv => nv.classList.remove('active'));
+        document.getElementById(p).classList.add('active');
+        document.getElementById(n).classList.add('active');
     }
 
-    document.getElementById('coin').onclick = () => {
-        if (energy > 0) { coins += pLvl; xp++; energy--; tg.HapticFeedback.impactOccurred('medium'); update(); }
-    };
-
-    function goTo(pgId, navId) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById(pgId).classList.add('active');
-        document.getElementById(navId).classList.add('active');
-    }
-
-    document.getElementById('n-game').onclick = () => goTo('pg-game', 'n-game');
-    document.getElementById('n-shop').onclick = () => goTo('pg-shop', 'n-shop');
-    document.getElementById('n-task').onclick = () => goTo('pg-task', 'n-task');
-    document.getElementById('n-ref').onclick = () => goTo('pg-ref', 'n-ref');
+    document.getElementById('n-game').onclick = () => navTo('pg-game', 'n-game');
+    document.getElementById('n-shop').onclick = () => navTo('pg-shop', 'n-shop');
+    document.getElementById('n-task').onclick = () => navTo('pg-task', 'n-task');
+    document.getElementById('n-ref').onclick = () => navTo('pg-ref', 'n-ref');
 
     document.getElementById('buy-tap').onclick = () => {
-        let price = Math.floor(50 * Math.pow(2, pLvl - 1));
-        if (coins >= price) { coins -= price; pLvl++; update(); }
+        let pr = Math.floor(50 * Math.pow(2, pLvl - 1));
+        if (coins >= pr) { coins -= pr; pLvl++; update(); }
+    };
+
+    document.getElementById('invite-btn').onclick = () => {
+        const link = https://t.me/share/url?url=https://t.me/Clicker_teken_bot?start=1&text=Панда чекає!;
+        tg.openTelegramLink(link);
     };
 
     setInterval(() => { if (energy < 1000) { energy++; update(); } }, 1500);
