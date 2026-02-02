@@ -5,78 +5,185 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
-        body { background: #0b0b0b; color: white; margin: 0; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        .header { padding: 15px; text-align: center; background: #151515; border-bottom: 1px solid #222; }
-        #balance { font-size: 34px; font-weight: bold; color: #f3ba2f; margin: 5px 0; }
-        .page { display: none; flex: 1; flex-direction: column; align-items: center; justify-content: center; padding: 20px; width: 100%; }
-        .active { display: flex !important; }
-        #coin { width: 220px; height: 220px; background: radial-gradient(circle, #222, #000); border: 4px solid #f3ba2f; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 100px; box-shadow: 0 0 20px rgba(243,186,47,0.2); transition: transform 0.1s; cursor: pointer; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
+        body { 
+            background: #0d0d0d; color: white; margin: 0; font-family: -apple-system, sans-serif; 
+            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+        }
         
-        /* РЕФЕРАЛКА як на фото */
-        .ref-card { background: #1e1e1e; width: 100%; border-radius: 25px; padding: 25px; border: 1px solid #333; text-align: left; position: relative; }
-        .gift-box { position: absolute; top: 20px; right: 20px; font-size: 40px; }
-        .ref-title { font-size: 20px; font-weight: bold; text-transform: uppercase; color: #fff; margin-bottom: 10px; padding-right: 50px; }
-        .ref-sub { color: #888; font-size: 14px; margin-bottom: 25px; }
-        .invite-btn { background: #d4af37; color: #000; border: none; width: 100%; padding: 18px; border-radius: 15px; font-weight: bold; font-size: 16px; cursor: pointer; }
-        .total-earned { margin-top: 30px; display: flex; align-items: center; gap: 12px; }
-        .coin-icon { width: 40px; height: 40px; background: #f3ba2f; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: black; font-weight: bold; font-size: 20px; }
-        .earned-info { font-size: 22px; font-weight: bold; }
+        /* Хедер з прогресом */
+        .header { padding: 10px; background: #151515; text-align: center; border-bottom: 1px solid #222; }
+        #balance { font-size: 32px; font-weight: 800; color: #f3ba2f; margin: 5px 0; }
+        .lvl-txt { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .lvl-bar { width: 60%; background: #333; height: 6px; border-radius: 10px; margin: 5px auto; overflow: hidden; }
+        #lvl-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #f3ba2f, #ffea00); transition: width 0.3s; }
 
-        .nav { background: #151515; height: 80px; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; padding-bottom: 15px; }
-        .nav-item { color: #555; font-size: 11px; text-align: center; flex: 1; }
+        .page { display: none; flex: 1; flex-direction: column; align-items: center; width: 100%; padding: 20px; overflow-y: auto; }
+        .active { display: flex !important; }
+
+        /* Панда */
+        #game-area { flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; }
+        #coin { 
+            width: 230px; height: 230px; background: radial-gradient(circle, #252525, #000); 
+            border: 5px solid #f3ba2f; border-radius: 50%; display: flex; align-items: center; 
+            justify-content: center; font-size: 100px; box-shadow: 0 0 30px rgba(243,186,47,0.15); 
+            transition: transform 0.05s; cursor: pointer;
+        }
+
+        /* Енергія */
+        .stat-bar { width: 100%; margin-top: 20px; }
+        .stat-info { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; color: #aaa; }
+        .en-bg { width: 100%; background: #222; height: 10px; border-radius: 10px; overflow: hidden; }
+        #en-fill { height: 100%; width: 100%; background: orange; transition: width 0.2s; }
+
+        /* Магазин та Картки */
+        .card { background: #1a1a1a; width: 100%; padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid #252525; display: flex; justify-content: space-between; align-items: center; }
+        .btn-up { background: #0088cc; color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: bold; }
+
+        /* РЕФЕРАЛКА як на скріні */
+        .ref-card { background: #1e1e1e; width: 100%; border-radius: 25px; padding: 25px; border: 1px solid #333; position: relative; text-align: left; }
+        .gift { position: absolute; top: 20px; right: 20px; font-size: 40px; }
+        .ref-title { font-size: 18px; font-weight: bold; color: white; margin-bottom: 8px; padding-right: 50px; }
+        .invite-btn { background: #d4af37; color: black; border: none; width: 100%; padding: 16px; border-radius: 15px; font-weight: 800; margin-top: 20px; font-size: 16px; }
+
+        /* Навігація */
+        .nav { height: 85px; display: flex; background: #151515; border-top: 1px solid #222; padding-bottom: 20px; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #555; font-size: 11px; cursor: pointer; }
         .nav-item.active { color: #f3ba2f; }
-        .nav-item span { font-size: 26px; display: block; margin-bottom: 4px; }
+        .nav-item span { font-size: 24px; margin-bottom: 4px; }
     </style>
 </head>
 <body>
 
-<div class="header"><div id="balance">0</div></div>
+<div class="header">
+    <div class="lvl-txt" id="lvl-name">Baby Panda</div>
+    <div class="lvl-bar"><div id="lvl-fill"></div></div>
+    <div id="balance">0</div>
+</div>
 
-<div id="pg-game" class="page active"><div id="coin">🐼</div></div>
+<div id="pg-game" class="page active">
+    <div id="game-area">
+        <div id="coin">🐼</div>
+    </div>
+    <div class="stat-bar">
+        <div class="stat-info">
+            <span>⚡ Енергія: <span id="energy">1000</span></span><span>Клік: +<span id="pwr">1</span></span>
+        </div>
+        <div class="en-bg"><div id="en-fill"></div></div>
+    </div>
+</div>
+
+<div id="pg-shop" class="page">
+    <div class="card">
+        <div><b>Multi-Tap</b><br><small>Ціна: <span id="price">50</span></small></div>
+        <button class="btn-up" onclick="buyUpgrade()">UP</button>
+    </div>
+</div>
 
 <div id="pg-ref" class="page">
     <div class="ref-card">
-        <div class="gift-box">🎁</div>
+        <div class="gift">🎁</div>
         <div class="ref-title">ПОЛУЧАЙТЕ 2,500 ПАНД ЗА КАЖДОЕ ПРИГЛАШЕНИЕ</div>
-        <div class="ref-sub">Приглашайте друзей и зарабатывайте вместе</div>
+        <div style="color:#888; font-size:14px;">Приглашайте друзей и зарабатывайте вместе</div>
         <button class="invite-btn" onclick="invite()">ПРИГЛАСИТЬ ДРУЗЕЙ</button>
     </div>
-    <div class="total-earned">
-        <div class="coin-icon">P</div>
-        <div class="earned-info">0 PANDA<br><small style="color:#555; font-weight:normal;">Всего заработано</small></div>
+    <div style="width:100%; display:flex; align-items:center; gap:15px; margin-top:25px;">
+        <div style="width:45px; height:45px; background:#f3ba2f; border-radius:50%; display:flex; align-items:center; justify-content:center; color:black; font-weight:bold;">P</div>
+        <div style="font-size:20px; font-weight:bold;">0 PANDA<br><small style="color:#555; font-weight:normal;">Всего заработано</small></div>
     </div>
 </div>
 
 <div class="nav">
-    <div class="nav-item active" onclick="show('pg-game', this)"><span>🚀</span>Игра</div>
-    <div class="nav-item" onclick="show('pg-ref', this)"><span>👥</span>Друзья</div>
+    <div class="nav-item active" onclick="nav('pg-game', this)"><span>🚀</span>Игра</div>
+    <div class="nav-item" onclick="nav('pg-shop', this)"><span>🛒</span>Магазин</div>
+    <div class="nav-item" onclick="nav('pg-ref', this)"><span>👥</span>Друзья</div>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
-    tg.ready();
-    let bal = Number(localStorage.getItem('p_bal')) || 0;
+    tg.ready(); tg.expand();
 
-    document.getElementById('coin').onclick = () => {
-        bal++;
-        document.getElementById('balance').innerText = bal.toLocaleString();
-        localStorage.setItem('p_bal', bal);
-        tg.HapticFeedback.impactOccurred('medium');
-    };
+    let coins = Number(localStorage.getItem('c')) || 0;
+    let xp = Number(localStorage.getItem('xp')) || 0;
+    let pLvl = Number(localStorage.getItem('pl')) || 1;
+    let energy = Number(localStorage.getItem('en')) || 1000;
 
-    function show(id, el) {
+    const chars = ["🐼", "🐨", "🐻", "🐯", "🦁"];
+    const names = ["Baby Panda", "Warrior Panda", "Cyber Panda", "Elite Guardian", "Panda King"];
+
+    function update() {
+        // Рівні: 1000, 3000, 6000, 8000
+        let lvl = 1;
+        let next = 1000;
+        let prev = 0;
+        if(xp >= 1000) { lvl = 2; prev = 1000; next = 3000; }
+        if(xp >= 3000) { lvl = 3; prev = 3000; next = 6000; }
+        if(xp >= 6000) { lvl = 4; prev = 6000; next = 8000; }
+        if(xp >= 8000) { lvl = 5; prev = 8000; next = 15000; }
+
+        document.getElementById('balance').innerText = Math.floor(coins).toLocaleString();
+        document.getElementById('energy').innerText = energy;
+        document.getElementById('en-fill').style.width = (energy / 10) + '%';
+        document.getElementById('pwr').innerText = pLvl;
+        document.getElementById('price').innerText = Math.floor(50 * Math.pow(2, pLvl - 1));
+        document.getElementById('lvl-name').innerText = names[lvl-1];
+        document.getElementById('coin').innerText = chars[lvl-1];
+        document.getElementById('lvl-fill').style.width = ((xp - prev) / (next - prev) * 100) + '%';
+
+        localStorage.setItem('c', coins);
+        localStorage.setItem('xp', xp);
+        localStorage.setItem('pl', pLvl);
+        localStorage.setItem('en', energy);
+    }
+
+    // КЛІК
+    document.getElementById('coin').addEventListener('touchstart', (e) => {
+        if (energy >= pLvl) {
+            coins += pLvl;
+            xp += 1;
+            energy -= pLvl;
+            
+            const c = document.getElementById('coin');
+            c.style.transform = 'scale(0.96)';
+            setTimeout(() => c.style.transform = 'scale(1)', 50);
+            
+            tg.HapticFeedback.impactOccurred('medium');
+            update();
+        }
+    });
+
+    function nav(id, el) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         el.classList.add('active');
+        tg.HapticFeedback.impactOccurred('light');
+    }
+
+    function buyUpgrade() {
+        let cost = Math.floor(50 * Math.pow(2, pLvl - 1));
+        if (coins >= cost) {
+            coins -= cost;pLvl++;
+            update();
+            tg.HapticFeedback.notificationOccurred('success');
+        }
     }
 
     function invite() {
-        const text = "Приєднуйся до Панда-клікера! 2,500 коїнів у подарунок! 🐼";
-        tg.openTelegramLink(`https://t.me/share/url?url=https://t.me/Clicker_teken_bot?start=ref&text=${encodeURIComponent(text)}`);
+        const link = "https://t.me/Clicker_teken_bot?start=ref123";
+        const text = "Залітай у Проєкт! Отримуй 2500 панд на старт! 🐼💎";
+        tg.openTelegramLink(`https://t.me/share/url?url=${link}&text=${encodeURIComponent(text)}`);
     }
-    document.getElementById('balance').innerText = bal.toLocaleString();
+
+    // Відновлення енергії
+    setInterval(() => {
+        if (energy < 1000) {
+            energy = Math.min(1000, energy + 1);
+            update();
+        }
+    }, 1500);
+
+    update();
 </script>
 </body>
 </html>
