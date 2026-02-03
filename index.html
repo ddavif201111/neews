@@ -11,8 +11,7 @@
             display: flex; flex-direction: column; height: 100vh; overflow: hidden;
         }
         
-        /* Хедер */
-        .header { padding: 10px; background: #151515; text-align: center; border-bottom: 1px solid #222; }
+        .header { padding: 10px; background: #151515; text-align: center; border-bottom: 1px solid #222; z-index: 100; }
         #balance { font-size: 32px; font-weight: 800; color: #f3ba2f; margin: 5px 0; }
         .lvl-bar { width: 60%; background: #333; height: 6px; border-radius: 10px; margin: 5px auto; overflow: hidden; }
         #lvl-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #f3ba2f, #ffea00); transition: width 0.3s; }
@@ -20,149 +19,135 @@
         .page { display: none; flex: 1; flex-direction: column; align-items: center; width: 100%; padding: 20px; overflow-y: auto; }
         .active { display: flex !important; }
 
-        /* Область кліку та анімація */
-        #game-area { flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; position: relative; }
+        /* ГОЛОВНА ЗОНА */
+        #game-area { 
+            flex: 1; display: flex; align-items: center; justify-content: center; 
+            width: 100%; position: relative; overflow: hidden; 
+        }
+        
+        #coin-container { position: relative; z-index: 5; }
+        
         #coin { 
-            width: 230px; height: 230px; background: radial-gradient(circle, #252525, #000); 
-            border: 5px solid #f3ba2f; border-radius: 50%; display: flex; align-items: center; 
-            justify-content: center; font-size: 100px; box-shadow: 0 0 30px rgba(243,186,47,0.15); 
-            transition: transform 0.05s; cursor: pointer; z-index: 2;
+            width: 240px; height: 240px; background: radial-gradient(circle, #252525, #000); 
+            border: 6px solid #f3ba2f; border-radius: 50%; display: flex; align-items: center; 
+            justify-content: center; font-size: 110px; box-shadow: 0 0 40px rgba(243,186,47,0.2); 
+            transition: transform 0.05s; cursor: pointer;
         }
 
-        /* Стиль вилітаючих цифр */
+        /* Анімація +1 */
         .plus-one {
-            position: absolute;
-            color: #f3ba2f;
-            font-size: 28px;
-            font-weight: 800;
-            pointer-events: none;
-            animation: moveUp 0.8s ease-out forwards;
-            z-index: 10;
+            position: absolute; color: #f3ba2f; font-size: 32px; font-weight: 900;
+            pointer-events: none; animation: moveUp 0.8s ease-out forwards; z-index: 50;
         }
 
         @keyframes moveUp {
-            0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-150px); opacity: 0; }
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-180px) scale(1.5); opacity: 0; }
         }
 
-        /* Енергія */
-        .stat-bar { width: 100%; margin-top: 20px; }
-        .en-bg { width: 100%; background: #222; height: 10px; border-radius: 10px; overflow: hidden; }
-        #en-fill { height: 100%; width: 100%; background: orange; transition: width 0.2s; }
+        .stat-bar { width: 100%; padding: 20px; z-index: 100; }
+        .en-bg { width: 100%; background: #222; height: 12px; border-radius: 10px; overflow: hidden; margin-top: 8px; }
+        #en-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #ff9500, #ffcc00); transition: width 0.2s; }
 
-        /* Магазин та Рефка */
-        .card { background: #1a1a1a; width: 100%; padding: 15px; border-radius: 20px; margin-bottom: 12px; border: 1px solid #252525; display: flex; justify-content: space-between; align-items: center; }
-        .btn-up { background: #0088cc; color: white; border: none; padding: 10px 18px; border-radius: 12px; font-weight: bold; }
-        .ref-card { background: #1e1e1e; width: 100%; border-radius: 25px; padding: 25px; border: 1px solid #333; position: relative; text-align: left; }
-        .invite-btn { background: #d4af37; color: black; border: none; width: 100%; padding: 16px; border-radius: 15px; font-weight: 800; margin-top: 20px; }
-
-        /* Навігація */
-        .nav { height: 85px; display: flex; background: #151515; border-top: 1px solid #222; padding-bottom: 20px; }
+        .nav { height: 85px; display: flex; background: #151515; border-top: 1px solid #222; padding-bottom: 20px; z-index: 100; }
         .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #555; font-size: 11px; }
         .nav-item.active { color: #f3ba2f; }
-        .nav-item span { font-size: 24px; margin-bottom: 4px; }
+        .nav-item span { font-size: 26px; }
+
+        /* Магазин */
+        .card { background: #1a1a1a; width: 100%; padding: 15px; border-radius: 20px; margin-bottom: 12px; border: 1px solid #252525; display: flex; justify-content: space-between; align-items: center; }
+        .btn-up { background: #0088cc; color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <div id="lvl-name" style="font-size:11px; color:#888;">Baby Panda</div>
-    <div class="lvl-bar"><div id="lvl-fill"></div></div>
     <div id="balance">0</div>
+    <div class="lvl-bar"><div id="lvl-fill"></div></div>
 </div>
 
 <div id="pg-game" class="page active">
     <div id="game-area">
-        <div id="coin">🐼</div>
+        <div id="coin-container">
+            <div id="coin">🐼</div>
+        </div>
     </div>
     <div class="stat-bar">
-        <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:5px;"><span>⚡ <span id="energy">1000</span> / <span id="max-energy">1000</span></span>
-            <span>Клік: +<span id="pwr">1</span></span>
+        <div style="display:flex; justify-content:space-between; font-size:14px; font-weight:bold;">
+            <span>⚡ <span id="energy">1000</span> / <span id="max-energy">1000</span></span>
+            <span>+<span id="pwr">1</span></span>
         </div>
         <div class="en-bg"><div id="en-fill"></div></div>
     </div>
 </div>
 
 <div id="pg-shop" class="page">
-    <div class="card">
-        <div><b>Multi-Tap</b><br><small>Ціна: <span id="tap-price">50</span></small></div>
+    <div class="card"><div><b>Multi-Tap</b><br><small id="tap-price-txt">Ціна: 50</small></div>
         <button class="btn-up" onclick="buyTap()">UP</button>
-    </div>
-    <div class="card">
-        <div><b>Energy Limit</b><br><small>Ціна: <span id="en-price">500</span></small></div>
-        <button class="btn-up" onclick="buyEnergy()">UP</button>
-    </div>
-</div>
-
-<div id="pg-ref" class="page">
-    <div class="ref-card">
-        <div style="font-size:18px; font-weight:bold;">ПОЛУЧАЙТЕ 2,500 ПАНД ЗА ЗАПРОШЕННЯ</div>
-        <button class="invite-btn" onclick="invite()">ПРИГЛАСИТЬ ДРУЗЕЙ</button>
     </div>
 </div>
 
 <div class="nav">
     <div class="nav-item active" onclick="nav('pg-game', this)"><span>🚀</span>Игра</div>
     <div class="nav-item" onclick="nav('pg-shop', this)"><span>🛒</span>Магазин</div>
-    <div class="nav-item" onclick="nav('pg-ref', this)"><span>👥</span>Друзья</div>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
-    tg.ready(); tg.expand();
+    tg.ready();
+    tg.expand();
 
+    // Дані
     let coins = Number(localStorage.getItem('c')) || 0;
-    let xp = Number(localStorage.getItem('xp')) || 0;
     let pLvl = Number(localStorage.getItem('pl')) || 1;
-    let eLvl = Number(localStorage.getItem('el')) || 1;
-    const energySteps = [1000, 1500, 3000, 5000, 7000, 10000];
-    function getMaxE() { return energySteps[eLvl-1] || 10000; }
-    let energy = Number(localStorage.getItem('en')) || getMaxE();
+    let energy = Number(localStorage.getItem('en')) || 1000;
+    let maxE = 1000;
 
-    function update() {
-        let maxE = getMaxE();
+    function updateUI() {
         document.getElementById('balance').innerText = Math.floor(coins).toLocaleString();
         document.getElementById('energy').innerText = Math.floor(energy);
-        document.getElementById('max-energy').innerText = maxE;
-        document.getElementById('en-fill').style.width = (energy / maxE * 100) + '%';
         document.getElementById('pwr').innerText = pLvl;
-        document.getElementById('tap-price').innerText = Math.floor(50 * Math.pow(2, pLvl - 1));
-        document.getElementById('en-price').innerText = Math.floor(500 * Math.pow(2, eLvl - 1));
+        document.getElementById('en-fill').style.width = (energy / maxE * 100) + '%';
+        document.getElementById('tap-price-txt').innerText = "Ціна: " + Math.floor(50 * Math.pow(2, pLvl - 1));
         
         localStorage.setItem('c', coins);
         localStorage.setItem('en', energy);
         localStorage.setItem('pl', pLvl);
-        localStorage.setItem('el', eLvl);
     }
 
-    // ЛОГІКА КЛІКУ З АНІМАЦІЄЮ +1
-    document.getElementById('coin').addEventListener('touchstart', (e) => {
+    // ГОЛОВНА ФУНКЦІЯ КЛІКУ
+    function handleTap(e) {
         if (energy >= pLvl) {
             coins += pLvl;
             energy -= pLvl;
-            xp += 1;
 
-            // Створення вилітаючої цифри
-            const touch = e.touches[0];
-            const plusOne = document.createElement('div');
-            plusOne.classList.add('plus-one');
-            plusOne.innerText = +${pLvl};
-            plusOne.style.left = ${touch.pageX - 15}px;
-            plusOne.style.top = ${touch.pageY - 40}px;
+            // Координати кліку
+            const x = e.type.includes('touch') ? e.touches[0].pageX : e.pageX;
+            const y = e.type.includes('touch') ? e.touches[0].pageY : e.pageY;
+
+            // Анімація цифри
+            const plus = document.createElement('div');
+            plus.className = 'plus-one';
+            plus.innerText = +${pLvl};
+            plus.style.left = ${x - 20}px;
+            plus.style.top = ${y - 30}px;
+            document.body.appendChild(plus);
             
-            document.body.appendChild(plusOne);
+            setTimeout(() => plus.remove(), 800);
 
-            // Видалення елемента після завершення анімації
-            setTimeout(() => { plusOne.remove(); }, 800);
+            // Візуал кнопки
+            const c = document.getElementById('coin');
+            c.style.transform = 'scale(0.92)';
+            setTimeout(() => c.style.transform = 'scale(1)', 50);
 
-            // Ефект натискання
-            document.getElementById('coin').style.transform = 'scale(0.95)';
-            setTimeout(() => { document.getElementById('coin').style.transform = 'scale(1)'; }, 50);
-
-            tg.HapticFeedback.impactOccurred('medium');
-            update();
+            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+            updateUI();
         }
-    });
+    }
+
+    const coinBtn = document.getElementById('coin');
+    coinBtn.addEventListener('touchstart', (e) => { e.preventDefault(); handleTap(e); });
+    coinBtn.addEventListener('mousedown', (e) => { handleTap(e); });
 
     function nav(id, el) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -173,16 +158,23 @@
 
     function buyTap() {
         let cost = Math.floor(50 * Math.pow(2, pLvl - 1));
-        if (coins >= cost) { coins -= cost; pLvl++; update(); }
+        if (coins >= cost) {
+            coins -= cost;
+            pLvl++;
+            updateUI();
+            if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+        }
     }
 
-    function buyEnergy() {
-        let cost = Math.floor(500 * Math.pow(2, eLvl - 1));
-        if (coins >= cost) { coins -= cost; eLvl++; energy = getMaxE(); update(); }
-    }
+    // Реген енергії
+    setInterval(() => {
+        if (energy < maxE) {
+            energy = Math.min(maxE, energy + 2);
+            updateUI();
+        }
+    }, 1000);
 
-    setInterval(() => { if (energy < getMaxE()) { energy = Math.min(getMaxE(), energy + 3); update(); } }, 1500);
-    update();
+    updateUI();
 </script>
 </body>
 </html>
