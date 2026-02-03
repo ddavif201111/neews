@@ -11,7 +11,6 @@
             display: flex; flex-direction: column; height: 100vh; overflow: hidden;
         }
         
-        /* Хедер з прогресом */
         .header { padding: 10px; background: #151515; text-align: center; border-bottom: 1px solid #222; }
         #balance { font-size: 32px; font-weight: 800; color: #f3ba2f; margin: 5px 0; }
         .lvl-txt { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
@@ -21,7 +20,6 @@
         .page { display: none; flex: 1; flex-direction: column; align-items: center; width: 100%; padding: 20px; overflow-y: auto; }
         .active { display: flex !important; }
 
-        /* Панда */
         #game-area { flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; }
         #coin { 
             width: 230px; height: 230px; background: radial-gradient(circle, #252525, #000); 
@@ -30,23 +28,18 @@
             transition: transform 0.05s; cursor: pointer;
         }
 
-        /* Енергія */
         .stat-bar { width: 100%; margin-top: 20px; }
         .stat-info { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; color: #aaa; }
         .en-bg { width: 100%; background: #222; height: 10px; border-radius: 10px; overflow: hidden; }
         #en-fill { height: 100%; width: 100%; background: orange; transition: width 0.2s; }
 
-        /* Магазин та Картки */
-        .card { background: #1a1a1a; width: 100%; padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid #252525; display: flex; justify-content: space-between; align-items: center; }
-        .btn-up { background: #0088cc; color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: bold; }
+        .card { background: #1a1a1a; width: 100%; padding: 15px; border-radius: 20px; margin-bottom: 12px; border: 1px solid #252525; display: flex; justify-content: space-between; align-items: center; }
+        .btn-up { background: #0088cc; color: white; border: none; padding: 10px 18px; border-radius: 12px; font-weight: bold; min-width: 80px; }
 
-        /* РЕФЕРАЛКА як на скріні */
-        .ref-card { background: #1e1e1e; width: 100%; border-radius: 25px; padding: 25px; border: 1px solid #333; position: relative; text-align: left; }
+        .ref-card { background: #1e1e1e; width: 100%; border-radius: 25px; padding: 25px; border: 1px solid #333; position: relative; }
         .gift { position: absolute; top: 20px; right: 20px; font-size: 40px; }
-        .ref-title { font-size: 18px; font-weight: bold; color: white; margin-bottom: 8px; padding-right: 50px; }
         .invite-btn { background: #d4af37; color: black; border: none; width: 100%; padding: 16px; border-radius: 15px; font-weight: 800; margin-top: 20px; font-size: 16px; }
 
-        /* Навігація */
         .nav { height: 85px; display: flex; background: #151515; border-top: 1px solid #222; padding-bottom: 20px; }
         .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #555; font-size: 11px; cursor: pointer; }
         .nav-item.active { color: #f3ba2f; }
@@ -62,12 +55,11 @@
 </div>
 
 <div id="pg-game" class="page active">
-    <div id="game-area">
-        <div id="coin">🐼</div>
-    </div>
+    <div id="game-area"><div id="coin">🐼</div></div>
     <div class="stat-bar">
         <div class="stat-info">
-            <span>⚡ Енергія: <span id="energy">1000</span></span><span>Клік: +<span id="pwr">1</span></span>
+            <span>⚡ <span id="energy">1000</span> / <span id="max-energy">1000</span></span>
+            <span>Клік: +<span id="pwr">1</span></span>
         </div>
         <div class="en-bg"><div id="en-fill"></div></div>
     </div>
@@ -75,21 +67,19 @@
 
 <div id="pg-shop" class="page">
     <div class="card">
-        <div><b>Multi-Tap</b><br><small>Ціна: <span id="price">50</span></small></div>
-        <button class="btn-up" onclick="buyUpgrade()">UP</button>
+        <div><b>Multi-Tap</b><br><small>Ціна: <span id="tap-price">50</span></small></div><button class="btn-up" onclick="buyTap()">UP</button>
+    </div>
+    <div class="card">
+        <div><b>Energy Limit</b><br><small>Ціна: <span id="en-price">500</span></small></div>
+        <button class="btn-up" onclick="buyEnergy()">UP</button>
     </div>
 </div>
 
 <div id="pg-ref" class="page">
     <div class="ref-card">
         <div class="gift">🎁</div>
-        <div class="ref-title">ПОЛУЧАЙТЕ 2,500 ПАНД ЗА КАЖДОЕ ПРИГЛАШЕНИЕ</div>
-        <div style="color:#888; font-size:14px;">Приглашайте друзей и зарабатывайте вместе</div>
+        <div style="font-size:18px; font-weight:bold; padding-right:50px;">ПОЛУЧАЙТЕ 2,500 ПАНД ЗА КАЖДОЕ ПРИГЛАШЕНИЕ</div>
         <button class="invite-btn" onclick="invite()">ПРИГЛАСИТЬ ДРУЗЕЙ</button>
-    </div>
-    <div style="width:100%; display:flex; align-items:center; gap:15px; margin-top:25px;">
-        <div style="width:45px; height:45px; background:#f3ba2f; border-radius:50%; display:flex; align-items:center; justify-content:center; color:black; font-weight:bold;">P</div>
-        <div style="font-size:20px; font-weight:bold;">0 PANDA<br><small style="color:#555; font-weight:normal;">Всего заработано</small></div>
     </div>
 </div>
 
@@ -106,51 +96,67 @@
     let coins = Number(localStorage.getItem('c')) || 0;
     let xp = Number(localStorage.getItem('xp')) || 0;
     let pLvl = Number(localStorage.getItem('pl')) || 1;
-    let energy = Number(localStorage.getItem('en')) || 1000;
+    let eLvl = Number(localStorage.getItem('el')) || 1;
 
-    const chars = ["🐼", "🐨", "🐻", "🐯", "🦁"];
-    const names = ["Baby Panda", "Warrior Panda", "Cyber Panda", "Elite Guardian", "Panda King"];
+    // Масив рівнів енергії: 1000, 1500, 3000, 5000, 7000, 10000, 15000...
+    const energySteps = [1000, 1500, 3000, 5000, 7000, 10000, 15000, 20000, 25000, 30000];
+    
+    function getMaxEnergy() {
+        return energySteps[eLvl - 1] || (10000 + (eLvl - 6) * 5000);
+    }
+
+    let energy = Number(localStorage.getItem('en')) || getMaxEnergy();
 
     function update() {
-        // Рівні: 1000, 3000, 6000, 8000
-        let lvl = 1;
-        let next = 1000;
-        let prev = 0;
-        if(xp >= 1000) { lvl = 2; prev = 1000; next = 3000; }
-        if(xp >= 3000) { lvl = 3; prev = 3000; next = 6000; }
-        if(xp >= 6000) { lvl = 4; prev = 6000; next = 8000; }
-        if(xp >= 8000) { lvl = 5; prev = 8000; next = 15000; }
+        let maxE = getMaxEnergy();
+        let lvl = xp < 1000 ? 1 : xp < 3000 ? 2 : xp < 6000 ? 3 : xp < 8000 ? 4 : 5;
+        const names = ["Baby Panda", "Warrior Panda", "Cyber Panda", "Elite Guardian", "Panda King"];
+        const chars = ["🐼", "🐨", "🐻", "🐯", "🦁"];
+        let bounds = [0, 1000, 3000, 6000, 8000, 15000];
 
         document.getElementById('balance').innerText = Math.floor(coins).toLocaleString();
-        document.getElementById('energy').innerText = energy;
-        document.getElementById('en-fill').style.width = (energy / 10) + '%';
+        document.getElementById('energy').innerText = Math.floor(energy);
+        document.getElementById('max-energy').innerText = maxE;
+        document.getElementById('en-fill').style.width = (energy / maxE * 100) + '%';
         document.getElementById('pwr').innerText = pLvl;
-        document.getElementById('price').innerText = Math.floor(50 * Math.pow(2, pLvl - 1));
+        document.getElementById('tap-price').innerText = Math.floor(50 * Math.pow(2, pLvl - 1));
+        document.getElementById('en-price').innerText = Math.floor(500 * Math.pow(2, eLvl - 1));
         document.getElementById('lvl-name').innerText = names[lvl-1];
         document.getElementById('coin').innerText = chars[lvl-1];
-        document.getElementById('lvl-fill').style.width = ((xp - prev) / (next - prev) * 100) + '%';
+        document.getElementById('lvl-fill').style.width = ((xp - bounds[lvl-1]) / (bounds[lvl] - bounds[lvl-1]) * 100) + '%';
 
         localStorage.setItem('c', coins);
         localStorage.setItem('xp', xp);
         localStorage.setItem('pl', pLvl);
+        localStorage.setItem('el', eLvl);
         localStorage.setItem('en', energy);
     }
 
-    // КЛІК
     document.getElementById('coin').addEventListener('touchstart', (e) => {
         if (energy >= pLvl) {
-            coins += pLvl;
-            xp += 1;
-            energy -= pLvl;
-            
-            const c = document.getElementById('coin');
-            c.style.transform = 'scale(0.96)';
-            setTimeout(() => c.style.transform = 'scale(1)', 50);
-            
+            coins += pLvl; xp += 1; energy -= pLvl;
+            document.getElementById('coin').style.transform = 'scale(0.96)';
+            setTimeout(() => document.getElementById('coin').style.transform = 'scale(1)', 50);
             tg.HapticFeedback.impactOccurred('medium');
             update();
         }
     });
+
+    function buyTap() {
+        let cost = Math.floor(50 * Math.pow(2, pLvl - 1));
+        if (coins >= cost) { coins -= cost; pLvl++; tg.HapticFeedback.notificationOccurred('success'); update(); }
+    }
+
+    function buyEnergy() {
+        let cost = Math.floor(500 * Math.pow(2, eLvl - 1));
+        if (coins >= cost) { 
+            coins -= cost; 
+            eLvl++; 
+            energy = getMaxEnergy(); // Відразу заповнюємо при покупці
+            tg.HapticFeedback.notificationOccurred('success'); 
+            update(); 
+        }
+    }
 
     function nav(id, el) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -160,27 +166,16 @@
         tg.HapticFeedback.impactOccurred('light');
     }
 
-    function buyUpgrade() {
-        let cost = Math.floor(50 * Math.pow(2, pLvl - 1));
-        if (coins >= cost) {
-            coins -= cost;pLvl++;
-            update();
-            tg.HapticFeedback.notificationOccurred('success');
-        }
-    }
-
     function invite() {
-        const link = "https://t.me/Clicker_teken_bot?start=ref123";
-        const text = "Залітай у Проєкт! Отримуй 2500 панд на старт! 🐼💎";
-        tg.openTelegramLink(`https://t.me/share/url?url=${link}&text=${encodeURIComponent(text)}`);
+        tg.openTelegramLink(`https://t.me/share/url?url=https://t.me/Clicker_teken_bot?start=ref&text=Грай зі мною!`);
     }
 
-    // Відновлення енергії
-    setInterval(() => {
-        if (energy < 1000) {
-            energy = Math.min(1000, energy + 1);
-            update();
-        }
+    setInterval(() => { 
+        let maxE = getMaxEnergy();
+        if (energy < maxE) { 
+            energy = Math.min(maxE, energy + 3); 
+            update(); 
+        } 
     }, 1500);
 
     update();
