@@ -11,41 +11,54 @@
             display: flex; flex-direction: column; height: 100vh; overflow: hidden;
         }
         
+        /* Хедер */
         .header { padding: 10px; background: #151515; text-align: center; border-bottom: 1px solid #222; }
         #balance { font-size: 32px; font-weight: 800; color: #f3ba2f; margin: 5px 0; }
-        .lvl-txt { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
         .lvl-bar { width: 60%; background: #333; height: 6px; border-radius: 10px; margin: 5px auto; overflow: hidden; }
         #lvl-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #f3ba2f, #ffea00); transition: width 0.3s; }
 
         .page { display: none; flex: 1; flex-direction: column; align-items: center; width: 100%; padding: 20px; overflow-y: auto; }
         .active { display: flex !important; }
 
-        #game-area { flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; }
+        /* Область кліку та анімація */
+        #game-area { flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; position: relative; }
         #coin { 
             width: 230px; height: 230px; background: radial-gradient(circle, #252525, #000); 
             border: 5px solid #f3ba2f; border-radius: 50%; display: flex; align-items: center; 
             justify-content: center; font-size: 100px; box-shadow: 0 0 30px rgba(243,186,47,0.15); 
-            transition: transform 0.05s; cursor: pointer;
+            transition: transform 0.05s; cursor: pointer; z-index: 2;
         }
 
+        /* Стиль вилітаючих цифр */
+        .plus-one {
+            position: absolute;
+            color: #f3ba2f;
+            font-size: 28px;
+            font-weight: 800;
+            pointer-events: none;
+            animation: moveUp 0.8s ease-out forwards;
+            z-index: 10;
+        }
+
+        @keyframes moveUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-150px); opacity: 0; }
+        }
+
+        /* Енергія */
         .stat-bar { width: 100%; margin-top: 20px; }
-        .stat-info { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; color: #aaa; }
         .en-bg { width: 100%; background: #222; height: 10px; border-radius: 10px; overflow: hidden; }
         #en-fill { height: 100%; width: 100%; background: orange; transition: width 0.2s; }
 
+        /* Магазин та Рефка */
         .card { background: #1a1a1a; width: 100%; padding: 15px; border-radius: 20px; margin-bottom: 12px; border: 1px solid #252525; display: flex; justify-content: space-between; align-items: center; }
-        .btn-up { background: #0088cc; color: white; border: none; padding: 10px 18px; border-radius: 12px; font-weight: bold; min-width: 80px; }
-
-        /* ДИЗАЙН РЕФЕРАЛКИ */
+        .btn-up { background: #0088cc; color: white; border: none; padding: 10px 18px; border-radius: 12px; font-weight: bold; }
         .ref-card { background: #1e1e1e; width: 100%; border-radius: 25px; padding: 25px; border: 1px solid #333; position: relative; text-align: left; }
-        .gift { position: absolute; top: 20px; right: 20px; font-size: 40px; }
-        .ref-title { font-size: 18px; font-weight: bold; text-transform: uppercase; color: #fff; margin-bottom: 8px; padding-right: 50px; }
-        .invite-btn { background: #d4af37; color: black; border: none; width: 100%; padding: 16px; border-radius: 15px; font-weight: 800; margin-top: 20px; font-size: 16px; width: 100%; }
-        .total-earned { margin-top: 25px; display: flex; align-items: center; gap: 12px; }
-        .coin-icon { width: 45px; height: 45px; background: #f3ba2f; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: black; font-weight: bold; font-size: 20px; }
+        .invite-btn { background: #d4af37; color: black; border: none; width: 100%; padding: 16px; border-radius: 15px; font-weight: 800; margin-top: 20px; }
 
+        /* Навігація */
         .nav { height: 85px; display: flex; background: #151515; border-top: 1px solid #222; padding-bottom: 20px; }
-        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #555; font-size: 11px; cursor: pointer; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #555; font-size: 11px; }
         .nav-item.active { color: #f3ba2f; }
         .nav-item span { font-size: 24px; margin-bottom: 4px; }
     </style>
@@ -53,19 +66,20 @@
 <body>
 
 <div class="header">
-    <div class="lvl-txt" id="lvl-name">Baby Panda</div>
+    <div id="lvl-name" style="font-size:11px; color:#888;">Baby Panda</div>
     <div class="lvl-bar"><div id="lvl-fill"></div></div>
     <div id="balance">0</div>
 </div>
 
-<div id="pg-game" class="page active"><div id="game-area"><div id="coin">🐼</div></div>
+<div id="pg-game" class="page active">
+    <div id="game-area">
+        <div id="coin">🐼</div>
+    </div>
     <div class="stat-bar">
-        <div class="stat-info">
-            <span>⚡ <span id="energy">1000</span> / <span id="max-energy">1000</span></span>
+        <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:5px;"><span>⚡ <span id="energy">1000</span> / <span id="max-energy">1000</span></span>
             <span>Клік: +<span id="pwr">1</span></span>
         </div>
         <div class="en-bg"><div id="en-fill"></div></div>
-        <div style="text-align: center; color: #555; font-size: 11px; margin-top: 8px;">Дохід: <span id="afk-rate">0</span>/год</div>
     </div>
 </div>
 
@@ -78,22 +92,12 @@
         <div><b>Energy Limit</b><br><small>Ціна: <span id="en-price">500</span></small></div>
         <button class="btn-up" onclick="buyEnergy()">UP</button>
     </div>
-    <div class="card">
-        <div><b>AFK Farm</b><br><small>Ціна: <span id="farm-price">1000</span></small></div>
-        <button class="btn-up" onclick="buyFarm()">UP</button>
-    </div>
 </div>
 
 <div id="pg-ref" class="page">
     <div class="ref-card">
-        <div class="gift">🎁</div>
-        <div class="ref-title">ПОЛУЧАЙТЕ 2,500 ПАНД ЗА КАЖДОЕ ПРИГЛАШЕНИЕ</div>
-        <div style="color:#888; font-size:14px;">Приглашайте друзей и зарабатывайте вместе</div>
+        <div style="font-size:18px; font-weight:bold;">ПОЛУЧАЙТЕ 2,500 ПАНД ЗА ЗАПРОШЕННЯ</div>
         <button class="invite-btn" onclick="invite()">ПРИГЛАСИТЬ ДРУЗЕЙ</button>
-    </div>
-    <div class="total-earned">
-        <div class="coin-icon">P</div>
-        <div style="font-size:20px; font-weight:bold;">0 PANDA<br><small style="color:#555; font-weight:normal;">Всего заработано</small></div>
     </div>
 </div>
 
@@ -111,94 +115,73 @@
     let xp = Number(localStorage.getItem('xp')) || 0;
     let pLvl = Number(localStorage.getItem('pl')) || 1;
     let eLvl = Number(localStorage.getItem('el')) || 1;
-    let fLvl = Number(localStorage.getItem('fl')) || 0;
-    let lastTime = Number(localStorage.getItem('lt')) || Date.now();
-
-    const energySteps = [1000, 1500, 3000, 5000, 7000, 10000, 15000, 20000];
-    function getMaxE() { return energySteps[eLvl - 1] || 25000; }
+    const energySteps = [1000, 1500, 3000, 5000, 7000, 10000];
+    function getMaxE() { return energySteps[eLvl-1] || 10000; }
     let energy = Number(localStorage.getItem('en')) || getMaxE();
-
-    function applyAFK() {
-        const now = Date.now();
-        const diffInSec = Math.floor((now - lastTime) / 1000);
-        const energyRecovery = Math.floor(diffInSec / 1.5) * 3;
-        energy = Math.min(getMaxE(), energy + energyRecovery);
-        if (fLvl > 0) {
-            const earned = Math.floor((diffInSec / 3600) * (fLvl * 10));
-            if (earned > 0) {
-                coins += earned;
-                tg.showAlert(`Твоя Панда нафармила ${earned} PANDA!`);
-            }
-        }
-    }
 
     function update() {
         let maxE = getMaxE();
-        let lvl = xp < 1000 ? 1 : xp < 3000 ? 2 : xp < 6000 ? 3 : xp < 8000 ? 4 : 5;
-        const names = ["Baby Panda", "Warrior Panda", "Cyber Panda", "Elite Guardian", "Panda King"];
-        const chars = ["🐼", "🐨", "🐻", "🐯", "🦁"];
-        let bounds = [0, 1000, 3000, 6000, 8000, 15000];
-
         document.getElementById('balance').innerText = Math.floor(coins).toLocaleString();
         document.getElementById('energy').innerText = Math.floor(energy);
         document.getElementById('max-energy').innerText = maxE;
         document.getElementById('en-fill').style.width = (energy / maxE * 100) + '%';
         document.getElementById('pwr').innerText = pLvl;
-        document.getElementById('afk-rate').innerText = fLvl * 10;
         document.getElementById('tap-price').innerText = Math.floor(50 * Math.pow(2, pLvl - 1));
         document.getElementById('en-price').innerText = Math.floor(500 * Math.pow(2, eLvl - 1));
-        document.getElementById('farm-price').innerText = Math.floor(1000 * Math.pow(1.5, fLvl));
-        document.getElementById('lvl-name').innerText = names[lvl-1];
-        document.getElementById('coin').innerText = chars[lvl-1];
-        document.getElementById('lvl-fill').style.width = ((xp - bounds[lvl-1]) / (bounds[lvl] - bounds[lvl-1]) * 100) + '%';
-
+        
         localStorage.setItem('c', coins);
-        localStorage.setItem('xp', xp);
+        localStorage.setItem('en', energy);
         localStorage.setItem('pl', pLvl);
         localStorage.setItem('el', eLvl);
-        localStorage.setItem('fl', fLvl);
-        localStorage.setItem('en', energy);
-        localStorage.setItem('lt', Date.now());
     }
 
+    // ЛОГІКА КЛІКУ З АНІМАЦІЄЮ +1
     document.getElementById('coin').addEventListener('touchstart', (e) => {
         if (energy >= pLvl) {
-            coins += pLvl; xp += 1; energy -= pLvl;
-            document.getElementById('coin').style.transform = 'scale(0.96)';
-            setTimeout(() => document.getElementById('coin').style.transform = 'scale(1)', 50);
+            coins += pLvl;
+            energy -= pLvl;
+            xp += 1;
+
+            // Створення вилітаючої цифри
+            const touch = e.touches[0];
+            const plusOne = document.createElement('div');
+            plusOne.classList.add('plus-one');
+            plusOne.innerText = +${pLvl};
+            plusOne.style.left = ${touch.pageX - 15}px;
+            plusOne.style.top = ${touch.pageY - 40}px;
+            
+            document.body.appendChild(plusOne);
+
+            // Видалення елемента після завершення анімації
+            setTimeout(() => { plusOne.remove(); }, 800);
+
+            // Ефект натискання
+            document.getElementById('coin').style.transform = 'scale(0.95)';
+            setTimeout(() => { document.getElementById('coin').style.transform = 'scale(1)'; }, 50);
+
             tg.HapticFeedback.impactOccurred('medium');
             update();
         }
     });
-
-    function buyTap() {
-        let cost = Math.floor(50 * Math.pow(2, pLvl - 1));
-        if (coins >= cost) { coins -= cost; pLvl++; update(); }
-    }
-    function buyEnergy() {
-        let cost = Math.floor(500 * Math.pow(2, eLvl - 1));
-        if (coins >= cost) { coins -= cost; eLvl++; energy = getMaxE(); update(); }
-    }
-    function buyFarm() {
-        let cost = Math.floor(1000 * Math.pow(1.5, fLvl));
-        if (coins >= cost) { coins -= cost; fLvl++; update(); }
-    }
 
     function nav(id, el) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         el.classList.add('active');
-        tg.HapticFeedback.impactOccurred('light');
     }
 
-    function invite() {
-        const text = "Залітай у Панда-клікер! Отримуй бонус 2500 на старт! 🐼🚀";
-        tg.openTelegramLink(`https://t.me/share/url?url=https://t.me/Clicker_teken_bot?start=ref&text=${encodeURIComponent(text)}`);
+    function buyTap() {
+        let cost = Math.floor(50 * Math.pow(2, pLvl - 1));
+        if (coins >= cost) { coins -= cost; pLvl++; update(); }
     }
 
-    applyAFK();
-    setInterval(() => { if (energy < getMaxE()) { energy = Math.min(getMaxE(), energy + 3); } update(); }, 1500);
+    function buyEnergy() {
+        let cost = Math.floor(500 * Math.pow(2, eLvl - 1));
+        if (coins >= cost) { coins -= cost; eLvl++; energy = getMaxE(); update(); }
+    }
+
+    setInterval(() => { if (energy < getMaxE()) { energy = Math.min(getMaxE(), energy + 3); update(); } }, 1500);
     update();
 </script>
 </body>
